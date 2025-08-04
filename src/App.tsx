@@ -7,6 +7,11 @@ import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import POSSystem from "./pages/POSSystem";
+import MenuManagement from "./pages/MenuManagement";
+import InventoryManagement from "./pages/InventoryManagement";
+import SalesHistory from "./pages/SalesHistory";
+import Reports from "./pages/Reports";
+import StaffManagement from "./pages/StaffManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +27,11 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/pos" element={<POSSystem />} />
+            <Route path="/menu" element={<MenuManagement />} />
+            <Route path="/inventory" element={<InventoryManagement />} />
+            <Route path="/sales" element={<SalesHistory />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/staff" element={<StaffManagement />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
