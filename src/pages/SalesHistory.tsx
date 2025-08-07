@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { ArrowLeft, Search, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import OrderDetailsModal from "@/components/OrderDetailsModal";
 
 interface Order {
   id: string;
@@ -27,6 +28,8 @@ const SalesHistory = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     loadOrders();
@@ -64,6 +67,20 @@ const SalesHistory = () => {
 
   const totalSales = filteredOrders.reduce((sum, order) => sum + order.total_amount, 0);
   const totalTax = filteredOrders.reduce((sum, order) => sum + order.tax_amount, 0);
+
+  const handleViewOrder = (orderId: string) => {
+    setSelectedOrderId(orderId);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedOrderId(null);
+    setIsModalOpen(false);
+  };
+
+  const handleOrderUpdated = () => {
+    loadOrders();
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -171,7 +188,11 @@ const SalesHistory = () => {
                       </p>
                     </div>
                     
-                    <Button size="sm" variant="outline">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handleViewOrder(order.id)}
+                    >
                       <Eye className="h-4 w-4" />
                     </Button>
                   </div>
@@ -181,6 +202,13 @@ const SalesHistory = () => {
           </CardContent>
         </Card>
       </div>
+      
+      <OrderDetailsModal
+        orderId={selectedOrderId}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onOrderUpdated={handleOrderUpdated}
+      />
     </div>
   );
 };

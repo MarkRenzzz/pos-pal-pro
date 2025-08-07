@@ -19,6 +19,7 @@ interface MenuItem {
   category_id: string;
   is_available: boolean;
   preparation_time: number;
+  size?: string;
 }
 
 interface Category {
@@ -39,7 +40,8 @@ const MenuManagement = () => {
     price: "",
     category_id: "",
     is_available: true,
-    preparation_time: ""
+    preparation_time: "",
+    size: ""
   });
 
   useEffect(() => {
@@ -82,7 +84,8 @@ const MenuManagement = () => {
       price: parseFloat(formData.price),
       category_id: formData.category_id,
       is_available: formData.is_available,
-      preparation_time: parseInt(formData.preparation_time)
+      preparation_time: parseInt(formData.preparation_time),
+      size: formData.size || null
     };
 
     if (isEditing && selectedItem) {
@@ -95,6 +98,12 @@ const MenuManagement = () => {
         toast.error("Failed to update menu item");
       } else {
         toast.success("Menu item updated successfully");
+        // Log activity
+        await supabase.rpc('log_activity', {
+          action_type: 'UPDATE',
+          description_text: `Updated menu item: ${formData.name}`,
+          metadata_json: { item_id: selectedItem.id, action: 'update_menu_item' }
+        });
         resetForm();
         loadMenuItems();
       }
@@ -107,6 +116,12 @@ const MenuManagement = () => {
         toast.error("Failed to create menu item");
       } else {
         toast.success("Menu item created successfully");
+        // Log activity
+        await supabase.rpc('log_activity', {
+          action_type: 'CREATE',
+          description_text: `Created menu item: ${formData.name}`,
+          metadata_json: { action: 'create_menu_item' }
+        });
         resetForm();
         loadMenuItems();
       }
@@ -122,11 +137,13 @@ const MenuManagement = () => {
       price: item.price.toString(),
       category_id: item.category_id || "",
       is_available: item.is_available,
-      preparation_time: item.preparation_time.toString()
+      preparation_time: item.preparation_time.toString(),
+      size: item.size || ""
     });
   };
 
   const handleDelete = async (id: string) => {
+    const item = menuItems.find(item => item.id === id);
     const { error } = await supabase
       .from("menu_items")
       .delete()
@@ -136,6 +153,12 @@ const MenuManagement = () => {
       toast.error("Failed to delete menu item");
     } else {
       toast.success("Menu item deleted successfully");
+      // Log activity
+      await supabase.rpc('log_activity', {
+        action_type: 'DELETE',
+        description_text: `Deleted menu item: ${item?.name}`,
+        metadata_json: { item_id: id, action: 'delete_menu_item' }
+      });
       loadMenuItems();
     }
   };
@@ -147,7 +170,8 @@ const MenuManagement = () => {
       price: "",
       category_id: "",
       is_available: true,
-      preparation_time: ""
+      preparation_time: "",
+      size: ""
     });
     setSelectedItem(null);
     setIsEditing(false);
@@ -242,6 +266,23 @@ const MenuManagement = () => {
                   />
                 </div>
                 
+                <div>
+                  <Label htmlFor="size">Size (Optional)</Label>
+                  <Select 
+                    value={formData.size} 
+                    onValueChange={(value) => setFormData({ ...formData, size: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select size (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">No specific size</SelectItem>
+                      <SelectItem value="16oz">16oz</SelectItem>
+                      <SelectItem value="22oz">22oz</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
                 <div className="flex gap-2">
                   <Button type="submit">
                     {isEditing ? "Update" : "Create"}
@@ -266,13 +307,13 @@ const MenuManagement = () => {
               <div className="space-y-4 max-h-96 overflow-y-auto">
                 {menuItems.map(item => (
                   <div key={item.id} className="flex justify-between items-center p-3 border rounded">
-                    <div>
-                      <h4 className="font-medium">{item.name}</h4>
-                      <p className="text-sm text-muted-foreground">${item.price.toFixed(2)}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {item.is_available ? "Available" : "Unavailable"}
-                      </p>
-                    </div>
+                     <div>
+                       <h4 className="font-medium">{item.name} {item.size && `(${item.size})`}</h4>
+                       <p className="text-sm text-muted-foreground">${item.price.toFixed(2)}</p>
+                       <p className="text-xs text-muted-foreground">
+                         {item.is_available ? "Available" : "Unavailable"}
+                       </p>
+                     </div>
                     <div className="flex gap-2">
                       <Button
                         size="sm"

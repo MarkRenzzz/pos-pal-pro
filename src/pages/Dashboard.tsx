@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,9 +16,18 @@ import {
   TrendingUp
 } from "lucide-react";
 
+interface ActivityLog {
+  id: string;
+  action: string;
+  description: string;
+  created_at: string;
+  metadata?: any;
+}
+
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [activities, setActivities] = useState<ActivityLog[]>([]);
 
   const dashboardCards = [
     {
@@ -63,6 +73,31 @@ const Dashboard = () => {
       path: "/staff"
     }
   ];
+
+  useEffect(() => {
+    loadActivities();
+  }, []);
+
+  const loadActivities = async () => {
+    const { data, error } = await supabase
+      .from("activity_logs")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(5);
+    
+    if (!error && data) {
+      setActivities(data);
+    }
+  };
+
+  const getActivityColor = (action: string) => {
+    switch (action.toLowerCase()) {
+      case 'create': return 'bg-green-500';
+      case 'update': return 'bg-blue-500';
+      case 'delete': return 'bg-red-500';
+      default: return 'bg-gray-500';
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -188,29 +223,23 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Order #ORD-20250802-0023 completed</p>
-                  <p className="text-xs text-muted-foreground">2 minutes ago • $12.50</p>
+              {activities.length === 0 ? (
+                <div className="text-center py-4 text-muted-foreground">
+                  No recent activities
                 </div>
-              </div>
-              
-              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Low stock alert: Coffee Beans</p>
-                  <p className="text-xs text-muted-foreground">5 minutes ago • 8 kg remaining</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">New menu item added: Iced Latte</p>
-                  <p className="text-xs text-muted-foreground">1 hour ago</p>
-                </div>
-              </div>
+              ) : (
+                activities.map(activity => (
+                  <div key={activity.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                    <div className={`w-2 h-2 rounded-full ${getActivityColor(activity.action)}`}></div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{activity.description}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(activity.created_at).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
