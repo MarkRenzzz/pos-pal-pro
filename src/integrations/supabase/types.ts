@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          action: string
+          created_at: string
+          description: string
+          id: string
+          metadata: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          description: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          description?: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -136,6 +163,7 @@ export type Database = {
           name: string
           preparation_time: number | null
           price: number
+          size: string | null
           updated_at: string
         }
         Insert: {
@@ -148,6 +176,7 @@ export type Database = {
           name: string
           preparation_time?: number | null
           price: number
+          size?: string | null
           updated_at?: string
         }
         Update: {
@@ -160,6 +189,7 @@ export type Database = {
           name?: string
           preparation_time?: number | null
           price?: number
+          size?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -352,6 +382,14 @@ export type Database = {
     Functions: {
       generate_order_number: {
         Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      log_activity: {
+        Args: {
+          action_type: string
+          description_text: string
+          metadata_json?: Json
+        }
         Returns: string
       }
     }
