@@ -134,10 +134,10 @@ const MenuManagement = () => {
     setFormData({
       name: item.name,
       description: item.description || "",
-      price: item.price.toString(),
+      price: (item.price ?? 0).toString(),
       category_id: item.category_id || "",
-      is_available: item.is_available,
-      preparation_time: item.preparation_time.toString(),
+      is_available: item.is_available ?? true,
+      preparation_time: (item.preparation_time ?? "").toString(),
       size: item.size || ""
     });
   };
@@ -309,7 +309,7 @@ const MenuManagement = () => {
                   <div key={item.id} className="flex justify-between items-center p-3 border rounded">
                      <div>
                        <h4 className="font-medium">{item.name} {item.size && `(${item.size})`}</h4>
-                       <p className="text-sm text-muted-foreground">${item.price.toFixed(2)}</p>
+                       <p className="text-sm text-muted-foreground">${Number(item.price ?? 0).toFixed(2)}</p>
                        <p className="text-xs text-muted-foreground">
                          {item.is_available ? "Available" : "Unavailable"}
                        </p>
