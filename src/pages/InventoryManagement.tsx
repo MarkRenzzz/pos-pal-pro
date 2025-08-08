@@ -79,18 +79,32 @@ const InventoryManagement = () => {
         toast.error("Failed to update inventory item");
       } else {
         toast.success("Inventory item updated successfully");
+        // Log activity
+        await supabase.rpc('log_activity', {
+          action_type: 'UPDATE',
+          description_text: `Updated inventory item: ${formData.item_name}`,
+          metadata_json: { inventory_id: selectedItem.id }
+        });
         resetForm();
         loadInventory();
       }
     } else {
-      const { error } = await supabase
+      const { data: inserted, error } = await supabase
         .from("inventory")
-        .insert(itemData);
+        .insert(itemData)
+        .select()
+        .single();
       
       if (error) {
         toast.error("Failed to create inventory item");
       } else {
         toast.success("Inventory item created successfully");
+        // Log activity
+        await supabase.rpc('log_activity', {
+          action_type: 'CREATE',
+          description_text: `Created inventory item: ${formData.item_name}`,
+          metadata_json: { inventory_id: inserted?.id }
+        });
         resetForm();
         loadInventory();
       }

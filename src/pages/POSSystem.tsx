@@ -72,7 +72,9 @@ const POSSystem = () => {
     if (error) {
       toast.error("Failed to load categories");
     } else {
-      setCategories(data || []);
+      const banned = new Set(['beverages','beverage','coffee','pastries','sandwiches','tea']);
+      const filtered = (data || []).filter(c => !banned.has(c.name?.trim().toLowerCase()));
+      setCategories(filtered);
     }
   };
 
@@ -183,6 +185,18 @@ const POSSystem = () => {
             customer_name: customerName
           }
         });
+
+      // Also log to activity feed
+      await supabase.rpc('log_activity', {
+        action_type: 'CREATE',
+        description_text: `Completed sale: ${orderNumber}`,
+        metadata_json: {
+          order_id: order.id,
+          amount: total,
+          items_count: cart.length,
+          payment_method: paymentMethod
+        }
+      });
 
       toast.success("Order completed successfully!");
       

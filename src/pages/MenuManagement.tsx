@@ -71,7 +71,9 @@ const MenuManagement = () => {
     if (error) {
       toast.error("Failed to load categories");
     } else {
-      setCategories(data || []);
+      const banned = new Set(['beverages','beverage','coffee','pastries','sandwiches','tea']);
+      const filtered = (data || []).filter(c => !banned.has(c.name?.trim().toLowerCase()));
+      setCategories(filtered);
     }
   };
 
