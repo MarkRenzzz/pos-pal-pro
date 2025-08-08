@@ -4,6 +4,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { ArrowLeft, Users, Shield, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -22,6 +26,8 @@ const StaffManagement = () => {
   const navigate = useNavigate();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [newUser, setNewUser] = useState({ email: "", password: "", full_name: "", role: "cashier" });
 
   useEffect(() => {
     loadProfiles();
@@ -56,6 +62,28 @@ const StaffManagement = () => {
     }
   };
 
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { data, error } = await supabase.functions.invoke('create-user', {
+      body: {
+        email: newUser.email,
+        password: newUser.password,
+        full_name: newUser.full_name,
+        role: newUser.role,
+      },
+    });
+
+    if (error) {
+      toast.error("Failed to create user");
+      console.error(error);
+    } else {
+      toast.success("User created successfully");
+      setCreateOpen(false);
+      setNewUser({ email: "", password: "", full_name: "", role: "cashier" });
+      loadProfiles();
+    }
+  };
+
   const getRoleIcon = (role: string) => {
     switch (role) {
       case "admin": return <Shield className="h-4 w-4" />;
@@ -85,6 +113,9 @@ const StaffManagement = () => {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <h1 className="text-xl font-bold">Staff Management</h1>
+          <div className="ml-auto">
+            <Button onClick={() => setCreateOpen(true)}>Create User</Button>
+          </div>
         </div>
       </div>
 
@@ -158,38 +189,35 @@ const StaffManagement = () => {
                       <Badge variant={getRoleColor(profile.role) as any}>
                         {profile.role}
                       </Badge>
-                      
-                      {user?.id !== profile.user_id && (
-                        <div className="flex gap-2">
-                          {profile.role !== "admin" && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateRole(profile.user_id, "admin")}
-                            >
-                              Make Admin
-                            </Button>
-                          )}
-                          {profile.role !== "manager" && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateRole(profile.user_id, "manager")}
-                            >
-                              Make Manager
-                            </Button>
-                          )}
-                          {profile.role !== "cashier" && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateRole(profile.user_id, "cashier")}
-                            >
-                              Make Cashier
-                            </Button>
-                          )}
-                        </div>
-                      )}
+                      <div className="flex gap-2">
+                        {profile.role !== "admin" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updateRole(profile.user_id, "admin")}
+                          >
+                            Make Admin
+                          </Button>
+                        )}
+                        {profile.role !== "manager" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updateRole(profile.user_id, "manager")}
+                          >
+                            Make Manager
+                          </Button>
+                        )}
+                        {profile.role !== "cashier" && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updateRole(profile.user_id, "cashier")}
+                          >
+                            Make Cashier
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -198,6 +226,45 @@ const StaffManagement = () => {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create User</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreateUser} className="space-y-4">
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" type="email" value={newUser.email} onChange={(e)=>setNewUser({ ...newUser, email: e.target.value })} required />
+            </div>
+            <div>
+              <Label htmlFor="password">Password</Label>
+              <Input id="password" type="password" value={newUser.password} onChange={(e)=>setNewUser({ ...newUser, password: e.target.value })} required />
+            </div>
+            <div>
+              <Label htmlFor="full_name">Full Name</Label>
+              <Input id="full_name" value={newUser.full_name} onChange={(e)=>setNewUser({ ...newUser, full_name: e.target.value })} />
+            </div>
+            <div>
+              <Label htmlFor="role">Role</Label>
+              <Select value={newUser.role} onValueChange={(v)=>setNewUser({ ...newUser, role: v })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="manager">Manager</SelectItem>
+                  <SelectItem value="cashier">Cashier</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button type="submit">Create</Button>
+              <Button type="button" variant="outline" onClick={()=>setCreateOpen(false)}>Cancel</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
