@@ -239,7 +239,7 @@ const MenuManagement = () => {
                 <div>
                   <Label htmlFor="category">Category</Label>
                   <Select 
-                    value={formData.category_id} 
+                    value={formData.category_id || undefined} 
                     onValueChange={(value) => setFormData({ ...formData, category_id: value })}
                   >
                     <SelectTrigger>
@@ -269,14 +269,14 @@ const MenuManagement = () => {
                 <div>
                   <Label htmlFor="size">Size (Optional)</Label>
                   <Select 
-                    value={formData.size} 
-                    onValueChange={(value) => setFormData({ ...formData, size: value })}
+                    value={formData.size || undefined} 
+                    onValueChange={(value) => setFormData({ ...formData, size: value === "__none" ? "" : value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select size (optional)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No specific size</SelectItem>
+                      <SelectItem value="__none">No specific size</SelectItem>
                       <SelectItem value="16oz">16oz</SelectItem>
                       <SelectItem value="22oz">22oz</SelectItem>
                     </SelectContent>
