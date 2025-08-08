@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { ArrowLeft, Plus, Edit, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { formatPHP } from "@/lib/utils";
 
 interface MenuItem {
   id: string;
@@ -18,7 +19,6 @@ interface MenuItem {
   price: number;
   category_id: string;
   is_available: boolean;
-  preparation_time: number;
   size?: string;
 }
 
@@ -40,7 +40,6 @@ const MenuManagement = () => {
     price: "",
     category_id: "",
     is_available: true,
-    preparation_time: "",
     size: ""
   });
 
@@ -63,7 +62,7 @@ const MenuManagement = () => {
   };
 
   const loadCategories = async () => {
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from("categories")
       .select("*")
       .order("name");
@@ -71,6 +70,17 @@ const MenuManagement = () => {
     if (error) {
       toast.error("Failed to load categories");
     } else {
+      const hasRice = (data || []).some(c => c.name?.trim().toLowerCase() === 'rice meal');
+      if (!hasRice) {
+        const { data: inserted } = await supabase
+          .from("categories")
+          .insert({ name: "RICE MEAL", description: "Rice meal items" })
+          .select()
+          .single();
+        if (inserted) {
+          data = [...(data || []), inserted];
+        }
+      }
       const banned = new Set(['beverages','beverage','coffee','pastries','sandwiches','tea']);
       const filtered = (data || []).filter(c => !banned.has(c.name?.trim().toLowerCase()));
       setCategories(filtered);
@@ -86,7 +96,6 @@ const MenuManagement = () => {
       price: parseFloat(formData.price),
       category_id: formData.category_id,
       is_available: formData.is_available,
-      preparation_time: parseInt(formData.preparation_time),
       size: formData.size || null
     };
 
@@ -139,7 +148,6 @@ const MenuManagement = () => {
       price: (item.price ?? 0).toString(),
       category_id: item.category_id || "",
       is_available: item.is_available ?? true,
-      preparation_time: (item.preparation_time ?? "").toString(),
       size: item.size || ""
     });
   };
@@ -172,7 +180,6 @@ const MenuManagement = () => {
       price: "",
       category_id: "",
       is_available: true,
-      preparation_time: "",
       size: ""
     });
     setSelectedItem(null);
@@ -227,7 +234,7 @@ const MenuManagement = () => {
                 </div>
                 
                 <div>
-                  <Label htmlFor="price">Price ($)</Label>
+                  <Label htmlFor="price">Price (₱)</Label>
                   <Input
                     id="price"
                     type="number"
@@ -257,16 +264,6 @@ const MenuManagement = () => {
                   </Select>
                 </div>
                 
-                <div>
-                  <Label htmlFor="preparation_time">Preparation Time (minutes)</Label>
-                  <Input
-                    id="preparation_time"
-                    type="number"
-                    value={formData.preparation_time}
-                    onChange={(e) => setFormData({ ...formData, preparation_time: e.target.value })}
-                    required
-                  />
-                </div>
                 
                 <div>
                   <Label htmlFor="size">Size (Optional)</Label>
@@ -311,7 +308,7 @@ const MenuManagement = () => {
                   <div key={item.id} className="flex justify-between items-center p-3 border rounded">
                      <div>
                        <h4 className="font-medium">{item.name} {item.size && `(${item.size})`}</h4>
-                       <p className="text-sm text-muted-foreground">${Number(item.price ?? 0).toFixed(2)}</p>
+                       <p className="text-sm text-muted-foreground">{formatPHP(Number(item.price ?? 0))}</p>
                        <p className="text-xs text-muted-foreground">
                          {item.is_available ? "Available" : "Unavailable"}
                        </p>

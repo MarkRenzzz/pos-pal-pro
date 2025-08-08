@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { ArrowLeft, Download, TrendingUp, DollarSign, ShoppingCart, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { formatPHP } from "@/lib/utils";
 
 interface SalesData {
   totalSales: number;
@@ -175,7 +176,7 @@ const Reports = () => {
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">${salesData.totalSales.toFixed(2)}</div>
+                  <div className="text-2xl font-bold">{formatPHP(salesData.totalSales)}</div>
                 </CardContent>
               </Card>
 
@@ -195,7 +196,7 @@ const Reports = () => {
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">${salesData.averageOrderValue.toFixed(2)}</div>
+                  <div className="text-2xl font-bold">{formatPHP(salesData.averageOrderValue)}</div>
                 </CardContent>
               </Card>
 
@@ -205,7 +206,7 @@ const Reports = () => {
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">${salesData.totalTax.toFixed(2)}</div>
+                  <div className="text-2xl font-bold">{formatPHP(salesData.totalTax)}</div>
                 </CardContent>
               </Card>
             </div>
@@ -235,9 +236,9 @@ const Reports = () => {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-medium">${item.revenue.toFixed(2)}</p>
+                          <p className="font-medium">{formatPHP(item.revenue)}</p>
                           <p className="text-sm text-muted-foreground">
-                            ${(item.revenue / item.quantity).toFixed(2)} avg
+                            {formatPHP(item.revenue / item.quantity)} avg
                           </p>
                         </div>
                       </div>

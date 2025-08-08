@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { formatPHP } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +29,10 @@ const Dashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [activities, setActivities] = useState<ActivityLog[]>([]);
+  const [todaySales, setTodaySales] = useState(0);
+  const [ordersToday, setOrdersToday] = useState(0);
+  const [lowStockCount, setLowStockCount] = useState(0);
+  const [menuItemsCount, setMenuItemsCount] = useState(0);
 
   const dashboardCards = [
     {
@@ -76,6 +81,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     loadActivities();
+    loadStats();
   }, []);
 
   const loadActivities = async () => {
@@ -87,6 +93,41 @@ const Dashboard = () => {
     
     if (!error && data) {
       setActivities(data);
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      const end = new Date();
+      end.setHours(23, 59, 59, 999);
+
+      const [ordersRes, invRes, menuRes] = await Promise.all([
+        supabase
+          .from("orders")
+          .select("id,total_amount,created_at,status")
+          .gte("created_at", start.toISOString())
+          .lte("created_at", end.toISOString())
+          .eq("status", "completed"),
+        supabase
+          .from("inventory")
+          .select("id,current_stock,min_stock_level"),
+        supabase
+          .from("menu_items")
+          .select("id")
+      ]);
+
+      const orders = ordersRes.data || [];
+      setOrdersToday(orders.length);
+      setTodaySales(orders.reduce((sum, o: any) => sum + (o.total_amount || 0), 0));
+
+      const inv = invRes.data || [];
+      setLowStockCount(inv.filter((i: any) => (i.current_stock ?? 0) <= (i.min_stock_level ?? 0)).length);
+
+      setMenuItemsCount((menuRes.data || []).length);
+    } catch (e) {
+      console.error("Failed to load dashboard stats", e);
     }
   };
 
@@ -140,7 +181,7 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Today's Sales</p>
-                  <p className="text-xl font-bold">$847.50</p>
+                  <p className="text-xl font-bold">{formatPHP(todaySales)}</p>
                 </div>
               </div>
             </CardContent>
@@ -154,7 +195,7 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Orders Today</p>
-                  <p className="text-xl font-bold">23</p>
+                  <p className="text-xl font-bold">{ordersToday}</p>
                 </div>
               </div>
             </CardContent>
@@ -168,7 +209,7 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Low Stock Items</p>
-                  <p className="text-xl font-bold">2</p>
+                  <p className="text-xl font-bold">{lowStockCount}</p>
                 </div>
               </div>
             </CardContent>
@@ -182,7 +223,7 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Menu Items</p>
-                  <p className="text-xl font-bold">6</p>
+                  <p className="text-xl font-bold">{menuItemsCount}</p>
                 </div>
               </div>
             </CardContent>

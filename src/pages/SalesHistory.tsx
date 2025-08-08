@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Search, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import OrderDetailsModal from "@/components/OrderDetailsModal";
+import { formatPHP } from "@/lib/utils";
 
 interface Order {
   id: string;
@@ -115,7 +116,7 @@ const SalesHistory = () => {
               <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${totalSales.toFixed(2)}</div>
+              <div className="text-2xl font-bold">{formatPHP(totalSales)}</div>
             </CardContent>
           </Card>
           
@@ -124,7 +125,7 @@ const SalesHistory = () => {
               <CardTitle className="text-sm font-medium">Total Tax</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${totalTax.toFixed(2)}</div>
+              <div className="text-2xl font-bold">{formatPHP(totalTax)}</div>
             </CardContent>
           </Card>
         </div>
@@ -182,7 +183,7 @@ const SalesHistory = () => {
                     </div>
                     
                     <div className="text-right mr-4">
-                      <p className="font-medium">${order.total_amount.toFixed(2)}</p>
+                      <p className="font-medium">{formatPHP(order.total_amount)}</p>
                       <p className="text-sm text-muted-foreground capitalize">
                         {order.payment_method}
                       </p>

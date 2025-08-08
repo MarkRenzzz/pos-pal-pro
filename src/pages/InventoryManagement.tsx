@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ArrowLeft, Plus, Edit, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { formatPHP } from "@/lib/utils";
 
 interface InventoryItem {
   id: string;
@@ -227,7 +228,7 @@ const InventoryManagement = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="cost_per_unit">Cost per Unit ($)</Label>
+                    <Label htmlFor="cost_per_unit">Cost per Unit (₱)</Label>
                     <Input
                       id="cost_per_unit"
                       type="number"
@@ -277,7 +278,7 @@ const InventoryManagement = () => {
                       <div>
                         <h4 className="font-medium">{item.item_name}</h4>
                         <p className="text-sm text-muted-foreground">
-                          {item.current_stock} {item.unit} - ${item.cost_per_unit.toFixed(2)} each
+                          {item.current_stock} {item.unit} - {formatPHP(item.cost_per_unit)} each
                         </p>
                         <div className="flex items-center gap-2 mt-1">
                           <Badge variant={status.variant}>{status.label}</Badge>

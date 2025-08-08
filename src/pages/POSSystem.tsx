@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { ArrowLeft, Plus, Minus, ShoppingCart, Printer, CreditCard, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { formatPHP } from "@/lib/utils";
 
 interface MenuItem {
   id: string;
@@ -20,7 +21,6 @@ interface MenuItem {
   price: number;
   category_id: string;
   is_available: boolean;
-  preparation_time: number;
 }
 
 interface Category {
@@ -64,7 +64,7 @@ const POSSystem = () => {
   };
 
   const loadCategories = async () => {
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from("categories")
       .select("*")
       .order("name");
@@ -72,6 +72,17 @@ const POSSystem = () => {
     if (error) {
       toast.error("Failed to load categories");
     } else {
+      const hasRice = (data || []).some(c => c.name?.trim().toLowerCase() === 'rice meal');
+      if (!hasRice) {
+        const { data: inserted } = await supabase
+          .from("categories")
+          .insert({ name: "RICE MEAL", description: "Rice meal items" })
+          .select()
+          .single();
+        if (inserted) {
+          data = [...(data || []), inserted];
+        }
+      }
       const banned = new Set(['beverages','beverage','coffee','pastries','sandwiches','tea']);
       const filtered = (data || []).filter(c => !banned.has(c.name?.trim().toLowerCase()));
       setCategories(filtered);
@@ -227,12 +238,12 @@ const POSSystem = () => {
       ${customerName ? `Customer: ${customerName}` : ''}
       
       Items:
-      ${cart.map(item => `${item.name} x${item.quantity} - $${(item.price * item.quantity).toFixed(2)}`).join('\n')}
+      ${cart.map(item => `${item.name} x${item.quantity} - ${formatPHP(item.price * item.quantity)}`).join('\n')}
       
       ==================
-      Subtotal: $${subtotal.toFixed(2)}
-      Tax (10%): $${tax.toFixed(2)}
-      Total: $${total.toFixed(2)}
+      Subtotal: ${formatPHP(subtotal)}
+      Tax (10%): ${formatPHP(tax)}
+      Total: ${formatPHP(total)}
       Payment: ${paymentMethod.toUpperCase()}
       
       Thank you for your visit!
@@ -300,14 +311,11 @@ const POSSystem = () => {
                         {item.description}
                       </CardDescription>
                     </div>
-                    <Badge variant="secondary">${item.price.toFixed(2)}</Badge>
+                    <Badge variant="secondary">{formatPHP(item.price)}</Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">
-                      {item.preparation_time} min prep
-                    </span>
+                  <div className="flex justify-end">
                     <Button size="sm">
                       <Plus className="h-4 w-4" />
                     </Button>
@@ -354,7 +362,7 @@ const POSSystem = () => {
                       <div className="flex-1">
                         <h4 className="font-medium">{item.name}</h4>
                         <p className="text-sm text-muted-foreground">
-                          ${item.price.toFixed(2)} each
+                          {formatPHP(item.price)} each
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
@@ -384,7 +392,7 @@ const POSSystem = () => {
                     />
                     <div className="text-right mt-2">
                       <span className="font-medium">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        {formatPHP(item.price * item.quantity)}
                       </span>
                     </div>
                   </div>
@@ -400,16 +408,16 @@ const POSSystem = () => {
                 <div className="space-y-2 mb-6">
                   <div className="flex justify-between">
                     <span>Subtotal:</span>
-                    <span>${calculateSubtotal().toFixed(2)}</span>
+                    <span>{formatPHP(calculateSubtotal())}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Tax (10%):</span>
-                    <span>${calculateTax(calculateSubtotal()).toFixed(2)}</span>
+                    <span>{formatPHP(calculateTax(calculateSubtotal()))}</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between font-bold text-lg">
                     <span>Total:</span>
-                    <span>${calculateTotal().toFixed(2)}</span>
+                    <span>{formatPHP(calculateTotal())}</span>
                   </div>
                 </div>
 

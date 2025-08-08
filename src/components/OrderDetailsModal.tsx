@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { Edit, Trash2, Printer, Save, X } from "lucide-react";
+import { formatPHP } from "@/lib/utils";
 
 interface OrderItem {
   id: string;
@@ -179,15 +180,15 @@ const OrderDetailsModal = ({ orderId, isOpen, onClose, onOrderUpdated }: OrderDe
         ${orderItems.map(item => `
           <div style="margin-bottom: 10px;">
             <p><strong>${item.menu_items?.name}</strong></p>
-            <p>Qty: ${item.quantity} × $${item.unit_price.toFixed(2)} = $${item.total_price.toFixed(2)}</p>
+            <p>Qty: ${item.quantity} × ${formatPHP(item.unit_price)} = ${formatPHP(item.total_price)}</p>
             ${item.special_instructions ? `<p><em>Note: ${item.special_instructions}</em></p>` : ''}
           </div>
         `).join('')}
         <hr>
-        <p><strong>Subtotal:</strong> $${(order.total_amount - order.tax_amount).toFixed(2)}</p>
-        <p><strong>Tax:</strong> $${order.tax_amount.toFixed(2)}</p>
-        <p><strong>Discount:</strong> -$${order.discount_amount.toFixed(2)}</p>
-        <p style="font-size: 18px;"><strong>Total: $${order.total_amount.toFixed(2)}</strong></p>
+        <p><strong>Subtotal:</strong> ${formatPHP(order.total_amount - order.tax_amount)}</p>
+        <p><strong>Tax:</strong> ${formatPHP(order.tax_amount)}</p>
+        <p><strong>Discount:</strong> -${formatPHP(order.discount_amount)}</p>
+        <p style="font-size: 18px;"><strong>Total: ${formatPHP(order.total_amount)}</strong></p>
         <p><strong>Payment:</strong> ${order.payment_method}</p>
         <hr>
         <p style="text-align: center;">Thank you for your business!</p>
@@ -354,7 +355,7 @@ const OrderDetailsModal = ({ orderId, isOpen, onClose, onOrderUpdated }: OrderDe
                     <div className="flex-1">
                       <h4 className="font-medium">{item.menu_items?.name}</h4>
                       <p className="text-sm text-muted-foreground">
-                        Qty: {item.quantity} × ${item.unit_price.toFixed(2)}
+                      Qty: {item.quantity} × {formatPHP(item.unit_price)}
                       </p>
                       {item.special_instructions && (
                         <p className="text-xs text-muted-foreground italic">
@@ -363,7 +364,7 @@ const OrderDetailsModal = ({ orderId, isOpen, onClose, onOrderUpdated }: OrderDe
                       )}
                     </div>
                     <div className="text-right">
-                      <p className="font-medium">${item.total_price.toFixed(2)}</p>
+                      <p className="font-medium">{formatPHP(item.total_price)}</p>
                     </div>
                   </div>
                 ))}
@@ -380,20 +381,20 @@ const OrderDetailsModal = ({ orderId, isOpen, onClose, onOrderUpdated }: OrderDe
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span>Subtotal:</span>
-                  <span>${(order.total_amount - order.tax_amount).toFixed(2)}</span>
+                  <span>{formatPHP(order.total_amount - order.tax_amount)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Tax:</span>
-                  <span>${order.tax_amount.toFixed(2)}</span>
+                  <span>{formatPHP(order.tax_amount)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Discount:</span>
-                  <span>-${order.discount_amount.toFixed(2)}</span>
+                  <span>-{formatPHP(order.discount_amount)}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total:</span>
-                  <span>${order.total_amount.toFixed(2)}</span>
+                  <span>{formatPHP(order.total_amount)}</span>
                 </div>
               </div>
             </CardContent>
