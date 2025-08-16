@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Search, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import OrderDetailsModal from "@/components/OrderDetailsModal";
+import SalesChart from "@/components/SalesChart";
 import { formatPHP } from "@/lib/utils";
 
 interface Order {
@@ -128,6 +129,11 @@ const SalesHistory = () => {
               <div className="text-2xl font-bold">{formatPHP(totalTax)}</div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Sales Chart */}
+        <div className="mb-6">
+          <SalesChart />
         </div>
 
         {/* Search */}
