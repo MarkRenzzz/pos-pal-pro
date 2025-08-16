@@ -9,8 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { Edit, Trash2, Printer, Save, X } from "lucide-react";
+import { Edit, Trash2, Printer, Save, X, Bluetooth } from "lucide-react";
 import { formatPHP } from "@/lib/utils";
+import { useBluetoothPrinter } from "@/hooks/useBluetoothPrinter";
 
 interface OrderItem {
   id: string;
@@ -52,6 +53,7 @@ const OrderDetailsModal = ({ orderId, isOpen, onClose, onOrderUpdated }: OrderDe
   const [isEditing, setIsEditing] = useState(false);
   const [editedOrder, setEditedOrder] = useState<Partial<Order>>({});
   const [loading, setLoading] = useState(false);
+  const bluetoothPrinter = useBluetoothPrinter();
 
   useEffect(() => {
     if (orderId && isOpen) {
@@ -168,30 +170,30 @@ const OrderDetailsModal = ({ orderId, isOpen, onClose, onOrderUpdated }: OrderDe
     
     const printContent = `
       <div style="font-family: Arial, sans-serif; max-width: 300px; margin: 0 auto;">
-        <h2 style="text-align: center;">Orijins POS</h2>
-        <h3 style="text-align: center;">Order Receipt</h3>
+        <h2 style="text-align: center;">Orijins Coffee House</h2>
+        <p style="text-align: center;">418 General Luna Street</p>
+        <p style="text-align: center;">09610537663</p>
         <hr>
-        <p><strong>Order:</strong> ${order.order_number}</p>
-        <p><strong>Customer:</strong> ${order.customer_name || 'Walk-in'}</p>
-        <p><strong>Date:</strong> ${new Date(order.created_at).toLocaleString()}</p>
-        <p><strong>Status:</strong> ${order.status}</p>
+        <p><strong>INV#:</strong> ${order.order_number}</p>
+        <p><strong>DATE:</strong> ${new Date(order.created_at).toLocaleDateString('en-GB')} <strong>TIME:</strong> ${new Date(order.created_at).toLocaleTimeString('en-GB', { hour12: false })}</p>
         <hr>
-        <h4>Items:</h4>
         ${orderItems.map(item => `
-          <div style="margin-bottom: 10px;">
-            <p><strong>${item.menu_items?.name}</strong></p>
-            <p>Qty: ${item.quantity} × ${formatPHP(item.unit_price)} = ${formatPHP(item.total_price)}</p>
-            ${item.special_instructions ? `<p><em>Note: ${item.special_instructions}</em></p>` : ''}
+          <div>
+            <p><strong>${item.menu_items?.name}${item.special_instructions ? ` (${item.special_instructions})` : ''}</strong></p>
+            <p>${item.quantity}.0 x ${formatPHP(item.unit_price).replace('₱', '')} ${formatPHP(item.total_price)}</p>
           </div>
         `).join('')}
         <hr>
-        <p><strong>Subtotal:</strong> ${formatPHP(order.total_amount - order.tax_amount)}</p>
-        <p><strong>Tax:</strong> ${formatPHP(order.tax_amount)}</p>
-        <p><strong>Discount:</strong> -${formatPHP(order.discount_amount)}</p>
-        <p style="font-size: 18px;"><strong>Total: ${formatPHP(order.total_amount)}</strong></p>
-        <p><strong>Payment:</strong> ${order.payment_method}</p>
+        <p>${orderItems.reduce((total, item) => total + item.quantity, 0)}.0 Item(s)</p>
+        <p><strong>SUBTOTAL ${formatPHP(order.total_amount)}</strong></p>
+        <p style="font-size: 18px;"><strong>TOTAL ${formatPHP(order.total_amount)}</strong></p>
         <hr>
-        <p style="text-align: center;">Thank you for your business!</p>
+        <p><strong>PAYMENT RECEIVED:</strong></p>
+        <p>${order.payment_method} ${formatPHP(order.total_amount)}</p>
+        <p><strong>CHANGE AMOUNT:</strong> 0.00</p>
+        <br>
+        <p>Acknowledgement Receipt</p>
+        <p style="text-align: center;">Thank you!</p>
       </div>
     `;
 
@@ -201,6 +203,38 @@ const OrderDetailsModal = ({ orderId, isOpen, onClose, onOrderUpdated }: OrderDe
       printWindow.document.close();
       printWindow.print();
     }
+  };
+
+  const handleBluetoothPrint = async () => {
+    if (!order) return;
+    
+    // Format for 58mm thermal printer
+    const receiptText = `
+        Orijins Coffee House
+        418 General Luna Street
+        09610537663
+--------------------------------
+INV#: ${order.order_number}
+DATE: ${new Date(order.created_at).toLocaleDateString('en-GB')} TIME: ${new Date(order.created_at).toLocaleTimeString('en-GB', { hour12: false })}
+--------------------------------
+${orderItems.map(item => 
+  `${item.menu_items?.name}${item.special_instructions ? ` (${item.special_instructions})` : ''}\n${item.quantity}.0 x ${formatPHP(item.unit_price).replace('₱', '')} ${formatPHP(item.total_price)}`
+).join('\n')}
+--------------------------------
+${orderItems.reduce((total, item) => total + item.quantity, 0)}.0 Item(s)
+SUBTOTAL ${formatPHP(order.total_amount)}
+
+TOTAL ${formatPHP(order.total_amount)}
+--------------------------------
+PAYMENT RECEIVED:
+${order.payment_method} ${formatPHP(order.total_amount)}
+CHANGE AMOUNT: 0.00
+
+Acknowledgement Receipt
+Thank you!
+    `;
+
+    await bluetoothPrinter.print(receiptText);
   };
 
   const getStatusColor = (status: string) => {
@@ -246,6 +280,14 @@ const OrderDetailsModal = ({ orderId, isOpen, onClose, onOrderUpdated }: OrderDe
                   </Button>
                   <Button size="sm" variant="outline" onClick={handlePrintOrder}>
                     <Printer className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant={bluetoothPrinter.isConnected ? "default" : "outline"} 
+                    onClick={bluetoothPrinter.isConnected ? handleBluetoothPrint : bluetoothPrinter.connect}
+                    disabled={bluetoothPrinter.isConnecting}
+                  >
+                    <Bluetooth className="h-4 w-4" />
                   </Button>
                   <Button size="sm" variant="destructive" onClick={handleDeleteOrder}>
                     <Trash2 className="h-4 w-4" />

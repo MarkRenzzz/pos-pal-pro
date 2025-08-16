@@ -6,6 +6,7 @@ import { formatPHP } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import Header from "@/components/Header";
 import { 
   ShoppingCart, 
   Coffee, 
@@ -142,32 +143,19 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b bg-card">
-        <div className="flex h-16 items-center px-6 justify-between">
-          <div className="flex items-center gap-4">
-            <Coffee className="h-8 w-8 text-primary" />
-            <div>
-              <h1 className="text-xl font-bold">Orijins POS</h1>
-              <p className="text-sm text-muted-foreground">Point of Sale System</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <Badge variant="outline" className="gap-2">
-              <AlertTriangle className="h-3 w-3" />
-              2 Low Stock Alerts
-            </Badge>
-            <div className="text-right">
-              <p className="text-sm font-medium">{user?.email}</p>
-              <p className="text-xs text-muted-foreground">Cashier</p>
-            </div>
-            <Button variant="outline" onClick={signOut}>
-              Sign Out
-            </Button>
-          </div>
+      <Header title="Dashboard">
+        <Badge variant="outline" className="gap-2">
+          <AlertTriangle className="h-3 w-3" />
+          {lowStockCount} Low Stock Alerts
+        </Badge>
+        <div className="text-right">
+          <p className="text-sm font-medium">{user?.email}</p>
+          <p className="text-xs text-primary-foreground/80">Cashier</p>
         </div>
-      </div>
+        <Button variant="secondary" onClick={signOut}>
+          Sign Out
+        </Button>
+      </Header>
 
       {/* Main Content */}
       <div className="p-6">
