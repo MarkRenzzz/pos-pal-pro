@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPHP } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { TrendingUp, Calendar } from "lucide-react";
+import { TrendingUp } from "lucide-react";
+import { toZonedTime, format } from "date-fns-tz";
 
 interface SalesData {
   date: string;
@@ -15,27 +15,32 @@ interface SalesData {
 
 type TimeRange = 'day' | 'week' | 'month' | 'year';
 
-const SalesChart = () => {
-  const [timeRange, setTimeRange] = useState<TimeRange>('day');
+interface SalesChartProps {
+  filterPeriod?: TimeRange;
+}
+
+const SalesChart = ({ filterPeriod = 'day' }: SalesChartProps) => {
   const [salesData, setSalesData] = useState<SalesData[]>([]);
   const [loading, setLoading] = useState(false);
+  
+  const timeZone = 'Asia/Manila';
 
   useEffect(() => {
     loadSalesData();
-  }, [timeRange]);
+  }, [filterPeriod]);
 
   const loadSalesData = async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from("orders")
-        .select("id,total_amount,created_at")
-        .eq("status", "completed")
+        .select("id,total_amount,created_at,paid_at")
+        .not("status", "in", '("canceled","void","refunded","test")')
         .order("created_at", { ascending: true });
 
       if (error) throw error;
 
-      const processedData = processSalesData(data || [], timeRange);
+      const processedData = processSalesData(data || [], filterPeriod);
       setSalesData(processedData);
     } catch (error) {
       console.error("Failed to load sales data:", error);
@@ -45,7 +50,7 @@ const SalesChart = () => {
   };
 
   const processSalesData = (orders: any[], range: TimeRange): SalesData[] => {
-    const now = new Date();
+    const now = toZonedTime(new Date(), timeZone);
     const dataMap = new Map<string, { sales: number; orders: number }>();
 
     // Initialize data points based on time range
@@ -54,10 +59,11 @@ const SalesChart = () => {
       dataMap.set(period, { sales: 0, orders: 0 });
     });
 
-    // Process orders
+    // Process orders using paid_at or fallback to created_at
     orders.forEach(order => {
-      const date = new Date(order.created_at);
-      const key = formatDateKey(date, range);
+      const orderDate = order.paid_at ? new Date(order.paid_at) : new Date(order.created_at);
+      const zonedDate = toZonedTime(orderDate, timeZone);
+      const key = formatDateKey(zonedDate, range);
       
       if (dataMap.has(key)) {
         const current = dataMap.get(key)!;
@@ -66,7 +72,7 @@ const SalesChart = () => {
       }
     });
 
-    // Convert to array format
+    // Convert to array format and ensure all periods are shown (including 0s)
     return Array.from(dataMap.entries())
       .map(([date, data]) => ({
         date: formatDisplayDate(date, range),
@@ -121,17 +127,20 @@ const SalesChart = () => {
   const formatDateKey = (date: Date, range: TimeRange): string => {
     switch (range) {
       case 'day':
-        return date.toISOString().split('T')[0]; // YYYY-MM-DD
+        return format(date, 'yyyy-MM-dd', { timeZone });
       case 'week':
         const weekStart = new Date(date);
-        weekStart.setDate(date.getDate() - date.getDay());
-        return weekStart.toISOString().split('T')[0];
+        // Set to Monday (start of week) 
+        const dayOfWeek = date.getDay();
+        const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        weekStart.setDate(date.getDate() - daysToSubtract);
+        return format(weekStart, 'yyyy-MM-dd', { timeZone });
       case 'month':
-        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        return format(date, 'yyyy-MM', { timeZone });
       case 'year':
-        return String(date.getFullYear());
+        return format(date, 'yyyy', { timeZone });
       default:
-        return date.toISOString().split('T')[0];
+        return format(date, 'yyyy-MM-dd', { timeZone });
     }
   };
 
@@ -187,7 +196,6 @@ const SalesChart = () => {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
               <TrendingUp className="h-4 w-4 text-primary" />
@@ -195,23 +203,10 @@ const SalesChart = () => {
             <div>
               <CardTitle className="text-lg">Sales Trends</CardTitle>
               <p className="text-xs text-muted-foreground">
-                Revenue performance over time
+                Revenue performance - {filterPeriod === 'day' ? 'Daily' : filterPeriod === 'week' ? 'Weekly' : filterPeriod === 'month' ? 'Monthly' : 'Yearly'} view
               </p>
             </div>
           </div>
-          
-          <Select value={timeRange} onValueChange={(value: TimeRange) => setTimeRange(value)}>
-            <SelectTrigger className="w-28">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="day">Daily</SelectItem>
-              <SelectItem value="week">Weekly</SelectItem>
-              <SelectItem value="month">Monthly</SelectItem>
-              <SelectItem value="year">Yearly</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
         
         <div className="flex gap-3 mt-3">
           <Badge variant="secondary" className="text-xs">
@@ -249,9 +244,9 @@ const SalesChart = () => {
                 dataKey="date" 
                 stroke="hsl(var(--muted-foreground))"
                 fontSize={11}
-                angle={timeRange === 'week' ? -45 : 0}
-                textAnchor={timeRange === 'week' ? 'end' : 'middle'}
-                height={timeRange === 'week' ? 70 : 50}
+                angle={filterPeriod === 'week' ? -45 : 0}
+                textAnchor={filterPeriod === 'week' ? 'end' : 'middle'}
+                height={filterPeriod === 'week' ? 70 : 50}
               />
               <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
               <Tooltip content={<CustomTooltip />} />
