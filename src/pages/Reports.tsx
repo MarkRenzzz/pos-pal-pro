@@ -75,6 +75,7 @@ const Reports = () => {
       // Calculate metrics
       const totalSales = orders?.reduce((sum, order) => sum + order.total_amount, 0) || 0;
       const totalOrders = orders?.length || 0;
+      const totalTax = orders?.reduce((sum, order) => sum + order.tax_amount, 0) || 0;
       const averageOrderValue = totalOrders > 0 ? totalSales / totalOrders : 0;
 
       // Calculate top items
@@ -104,7 +105,7 @@ const Reports = () => {
         totalSales,
         totalOrders,
         averageOrderValue,
-        totalTax: 0, // Removed tax tracking
+        totalTax,
         topItems
       });
 
@@ -168,7 +169,7 @@ const Reports = () => {
         ) : (
           <>
             {/* Key Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
@@ -199,6 +200,15 @@ const Reports = () => {
                 </CardContent>
               </Card>
 
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Tax</CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{formatPHP(salesData.totalTax)}</div>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Top Selling Items */}
