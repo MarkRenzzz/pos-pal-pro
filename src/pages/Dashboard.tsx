@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Header from "@/components/Header";
-import SalesChart from "@/components/SalesChart";
 import { 
   ShoppingCart, 
   Coffee, 
@@ -217,11 +216,6 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Sales Chart */}
-        <div className="mb-8">
-          <SalesChart />
         </div>
 
         {/* Main Dashboard Grid */}

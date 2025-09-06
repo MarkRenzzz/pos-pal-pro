@@ -6,10 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ArrowLeft, Search, Eye } from "lucide-react";
+import { ArrowLeft, Search, Eye, Filter } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import OrderDetailsModal from "@/components/OrderDetailsModal";
+import SalesChart from "@/components/SalesChart";
 import { formatPHP } from "@/lib/utils";
 
 interface Order {
@@ -21,33 +23,76 @@ interface Order {
   payment_method: string;
   status: string;
   created_at: string;
+  paid_at?: string;
 }
+
+type FilterPeriod = 'day' | 'week' | 'month' | 'year';
 
 const SalesHistory = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>('day');
   const [loading, setLoading] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     loadOrders();
-  }, []);
+  }, [filterPeriod]);
 
   const loadOrders = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("orders")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(100);
-    
-    if (error) {
-      toast.error("Failed to load sales history");
-    } else {
+    try {
+      // Calculate date range based on filter period using Asia/Manila timezone
+      const now = new Date();
+      const philippineOffset = 8 * 60; // UTC+8 in minutes
+      const localNow = new Date(now.getTime() + (philippineOffset * 60000));
+      
+      let startDate: Date;
+      
+      switch (filterPeriod) {
+        case 'day':
+          startDate = new Date(localNow);
+          startDate.setHours(0, 0, 0, 0);
+          break;
+        case 'week':
+          startDate = new Date(localNow);
+          // Set to Monday (start of week)
+          const dayOfWeek = startDate.getDay();
+          const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+          startDate.setDate(startDate.getDate() - daysToSubtract);
+          startDate.setHours(0, 0, 0, 0);
+          break;
+        case 'month':
+          startDate = new Date(localNow.getFullYear(), localNow.getMonth(), 1);
+          break;
+        case 'year':
+          startDate = new Date(localNow.getFullYear(), 0, 1);
+          break;
+        default:
+          startDate = new Date(localNow);
+          startDate.setHours(0, 0, 0, 0);
+      }
+      
+      // Convert back to UTC for database query
+      const startDateUTC = new Date(startDate.getTime() - (philippineOffset * 60000));
+      
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*")
+        .gte("created_at", startDateUTC.toISOString())
+        .not("status", "in", '("canceled","void","refunded","test")')
+        .order("created_at", { ascending: false })
+        .limit(1000);
+      
+      if (error) throw error;
       setOrders(data || []);
+    } catch (error) {
+      console.error("Error loading orders:", error);
+      toast.error("Failed to load sales history");
+      setOrders([]);
     }
     setLoading(false);
   };
@@ -67,7 +112,6 @@ const SalesHistory = () => {
   };
 
   const totalSales = filteredOrders.reduce((sum, order) => sum + order.total_amount, 0);
-  const totalTax = filteredOrders.reduce((sum, order) => sum + order.tax_amount, 0);
 
   const handleViewOrder = (orderId: string) => {
     setSelectedOrderId(orderId);
@@ -100,8 +144,28 @@ const SalesHistory = () => {
       </div>
 
       <div className="container mx-auto p-6">
-        {/* Summary Cards */}
+        {/* Filter and Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium">Filter Period</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Select value={filterPeriod} onValueChange={(value: FilterPeriod) => setFilterPeriod(value)}>
+                <SelectTrigger>
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="day">Per Day</SelectItem>
+                  <SelectItem value="week">Per Week</SelectItem>
+                  <SelectItem value="month">Per Month</SelectItem>
+                  <SelectItem value="year">Per Year</SelectItem>
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
+          
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
@@ -119,15 +183,11 @@ const SalesHistory = () => {
               <div className="text-2xl font-bold">{formatPHP(totalSales)}</div>
             </CardContent>
           </Card>
-          
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Total Tax</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatPHP(totalTax)}</div>
-            </CardContent>
-          </Card>
+        </div>
+
+        {/* Sales Chart */}
+        <div className="mb-6">
+          <SalesChart filterPeriod={filterPeriod} />
         </div>
 
         {/* Search */}
