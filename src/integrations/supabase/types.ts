@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -202,6 +202,99 @@ export type Database = {
           },
         ]
       }
+      order_actions: {
+        Row: {
+          action_by: string | null
+          action_type: string
+          amount: number | null
+          created_at: string | null
+          id: string
+          notes: string | null
+          order_id: string | null
+          reason: string | null
+        }
+        Insert: {
+          action_by?: string | null
+          action_type: string
+          amount?: number | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          reason?: string | null
+        }
+        Update: {
+          action_by?: string | null
+          action_type?: string
+          amount?: number | null
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_actions_action_by_fkey"
+            columns: ["action_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "order_actions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_discounts: {
+        Row: {
+          applied_by: string | null
+          created_at: string | null
+          discount_amount: number | null
+          discount_type: string
+          discount_value: number | null
+          id: string
+          order_id: string | null
+        }
+        Insert: {
+          applied_by?: string | null
+          created_at?: string | null
+          discount_amount?: number | null
+          discount_type: string
+          discount_value?: number | null
+          id?: string
+          order_id?: string | null
+        }
+        Update: {
+          applied_by?: string | null
+          created_at?: string | null
+          discount_amount?: number | null
+          discount_type?: string
+          discount_value?: number | null
+          id?: string
+          order_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_discounts_applied_by_fkey"
+            columns: ["applied_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "order_discounts_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           created_at: string
@@ -255,10 +348,14 @@ export type Database = {
           cashier_id: string | null
           created_at: string
           customer_name: string | null
+          customer_notes: string | null
+          customer_phone: string | null
           discount_amount: number
           id: string
           order_number: string
+          order_type: string | null
           payment_method: string
+          pickup_time: string | null
           status: string
           tax_amount: number
           total_amount: number
@@ -268,10 +365,14 @@ export type Database = {
           cashier_id?: string | null
           created_at?: string
           customer_name?: string | null
+          customer_notes?: string | null
+          customer_phone?: string | null
           discount_amount?: number
           id?: string
           order_number: string
+          order_type?: string | null
           payment_method?: string
+          pickup_time?: string | null
           status?: string
           tax_amount?: number
           total_amount: number
@@ -281,10 +382,14 @@ export type Database = {
           cashier_id?: string | null
           created_at?: string
           customer_name?: string | null
+          customer_notes?: string | null
+          customer_phone?: string | null
           discount_amount?: number
           id?: string
           order_number?: string
+          order_type?: string | null
           payment_method?: string
+          pickup_time?: string | null
           status?: string
           tax_amount?: number
           total_amount?: number

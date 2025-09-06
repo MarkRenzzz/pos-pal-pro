@@ -37,45 +37,52 @@ const Dashboard = () => {
 
   const dashboardCards = [
     {
-      title: "New Sale",
-      description: "Process customer orders",
+      title: "Order Management",
+      description: "Manage customer orders",
       icon: ShoppingCart,
       color: "bg-blue-500",
+      path: "/order-management"
+    },
+    {
+      title: "New Sale (POS)",
+      description: "Process in-store orders",  
+      icon: ShoppingCart,
+      color: "bg-green-500",
       path: "/pos"
     },
     {
       title: "Menu Management",
       description: "Manage your products",
       icon: Coffee,
-      color: "bg-green-500", 
+      color: "bg-orange-500", 
       path: "/menu"
     },
     {
       title: "Inventory",
       description: "Track stock levels",
       icon: Package,
-      color: "bg-orange-500",
+      color: "bg-purple-500",
       path: "/inventory"
     },
     {
       title: "Sales History",
       description: "View and manage orders",
       icon: FileText,
-      color: "bg-purple-500",
+      color: "bg-red-500",
       path: "/sales"
     },
     {
       title: "Reports",
       description: "Revenue analytics",
       icon: BarChart3,
-      color: "bg-red-500",
+      color: "bg-indigo-500",
       path: "/reports"
     },
     {
       title: "Staff Management",
       description: "Manage user accounts",
       icon: Users,
-      color: "bg-indigo-500",
+      color: "bg-pink-500",
       path: "/staff"
     }
   ];
