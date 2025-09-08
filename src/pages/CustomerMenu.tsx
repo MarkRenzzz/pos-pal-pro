@@ -6,8 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { formatPHP } from "@/lib/utils";
 import { 
@@ -16,12 +15,10 @@ import {
   Plus, 
   Minus, 
   Search,
-  Clock,
-  Phone,
   User,
-  MapPin,
-  UserCog
+  LogIn
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface MenuItem {
   id: string;
@@ -42,10 +39,10 @@ interface Category {
 
 interface CartItem extends MenuItem {
   quantity: number;
-  special_instructions?: string;
 }
 
-const CustomerHomepage = () => {
+const CustomerMenu = () => {
+  const navigate = useNavigate();
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -56,10 +53,7 @@ const CustomerHomepage = () => {
   
   // Customer form state
   const [customerName, setCustomerName] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
-  const [orderType, setOrderType] = useState("takeout");
-  const [pickupTime, setPickupTime] = useState("");
-  const [customerNotes, setCustomerNotes] = useState("");
+  const [specialInstructions, setSpecialInstructions] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -126,27 +120,15 @@ const CustomerHomepage = () => {
     }
   };
 
-  const updateInstructions = (itemId: string, instructions: string) => {
-    setCart(cart.map(item => 
-      item.id === itemId 
-        ? { ...item, special_instructions: instructions }
-        : item
-    ));
-  };
-
   const calculateTotal = () => {
     return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
 
-  const calculateTax = (subtotal: number) => {
-    return subtotal * 0.12; // 12% VAT
-  };
-
   const submitOrder = async () => {
-    if (!customerName || !customerPhone) {
+    if (!customerName.trim()) {
       toast({
         title: "Missing Information",
-        description: "Please provide your name and phone number.",
+        description: "Please provide your name.",
         variant: "destructive",
       });
       return;
@@ -164,10 +146,7 @@ const CustomerHomepage = () => {
     setIsSubmitting(true);
 
     try {
-      const subtotal = calculateTotal();
-      const tax = calculateTax(subtotal);
-      const total = subtotal + tax;
-
+      const total = calculateTotal();
       const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
 
       // Create order
@@ -176,12 +155,8 @@ const CustomerHomepage = () => {
         .insert({
           order_number: orderNumber,
           customer_name: customerName,
-          customer_phone: customerPhone,
-          order_type: orderType,
-          pickup_time: pickupTime ? new Date(pickupTime).toISOString() : null,
-          customer_notes: customerNotes,
+          special_instructions: specialInstructions || null,
           total_amount: total,
-          tax_amount: tax,
           status: "pending",
           payment_method: "pending"
         })
@@ -196,8 +171,7 @@ const CustomerHomepage = () => {
         menu_item_id: item.id,
         quantity: item.quantity,
         unit_price: item.price,
-        total_price: item.price * item.quantity,
-        special_instructions: item.special_instructions || null
+        total_price: item.price * item.quantity
       }));
 
       const { error: itemsError } = await supabase
@@ -206,25 +180,15 @@ const CustomerHomepage = () => {
 
       if (itemsError) throw itemsError;
 
-      // Log activity
-      await supabase.rpc('log_activity', {
-        action_type: 'create',
-        description_text: `New customer order ${orderNumber} placed`,
-        metadata_json: { order_id: order.id, customer: customerName }
-      });
-
       toast({
         title: "Order Placed Successfully!",
-        description: `Your order ${orderNumber} has been submitted. We'll contact you when it's ready.`,
+        description: `Your order ${orderNumber} has been submitted. Please wait for staff confirmation.`,
       });
 
       // Reset form and cart
       setCart([]);
       setCustomerName("");
-      setCustomerPhone("");
-      setOrderType("takeout");
-      setPickupTime("");
-      setCustomerNotes("");
+      setSpecialInstructions("");
       setIsCheckoutOpen(false);
       setIsCartOpen(false);
 
@@ -241,24 +205,22 @@ const CustomerHomepage = () => {
   };
 
   const cartTotal = calculateTotal();
-  const cartTax = calculateTax(cartTotal);
-  const cartGrandTotal = cartTotal + cartTax;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-primary text-primary-foreground shadow-lg">
+      <header className="bg-primary text-primary-foreground shadow-lg sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-3">
               <img 
                 src="/lovable-uploads/de766a0c-8555-4067-98ad-1830ddc6138a.png" 
-                alt="Orijins Coffee House" 
-                className="h-8 w-8"
+                alt="Orijin's Coffee Shop" 
+                className="h-10 w-10 rounded-lg"
               />
               <div>
-                <h1 className="text-xl font-semibold">Welcome to Orijins Coffee House</h1>
-                <p className="text-xs text-primary-foreground/80">Order your favorite coffee & treats</p>
+                <h1 className="text-2xl font-bold">Orijin's Coffee Shop</h1>
+                <p className="text-sm text-primary-foreground/80">Fresh coffee, made with love</p>
               </div>
             </div>
             
@@ -278,14 +240,14 @@ const CustomerHomepage = () => {
                 )}
               </Button>
               
-              {/* Admin Login */}
+              {/* Staff Login */}
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => window.location.href = "/admin"}
-                className="bg-background text-foreground border-primary-foreground/20"
+                onClick={() => navigate("/auth")}
+                className="bg-primary-foreground text-primary hover:bg-accent hover:text-accent-foreground"
               >
-                <UserCog className="h-4 w-4 mr-2" />
+                <LogIn className="h-4 w-4 mr-2" />
                 Staff Login
               </Button>
             </div>
@@ -294,23 +256,24 @@ const CustomerHomepage = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-primary/10 to-primary/5 py-12">
+      <section className="bg-gradient-to-r from-secondary/50 to-accent/30 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-foreground mb-4">
-            Freshly Brewed, Just For You
+          <h2 className="text-4xl font-bold text-foreground mb-4">
+            Welcome to Orijin's Coffee Shop
           </h2>
-          <p className="text-lg text-muted-foreground mb-8">
-            Discover our premium coffee selection and delicious treats. Order online for pickup!
+          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+            Discover our carefully crafted coffee blends and delicious treats. 
+            Made fresh daily with premium ingredients and served with a smile.
           </p>
           
           {/* Search Bar */}
           <div className="max-w-md mx-auto relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
-              placeholder="Search menu items..."
+              placeholder="Search our menu..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 bg-background"
             />
           </div>
         </div>
@@ -343,8 +306,8 @@ const CustomerHomepage = () => {
           {/* Menu Items Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredItems.map(item => (
-              <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="aspect-video bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+              <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-105">
+                <div className="aspect-video bg-gradient-to-br from-muted/30 to-accent/20 flex items-center justify-center">
                   {item.image_url ? (
                     <img 
                       src={item.image_url} 
@@ -352,14 +315,14 @@ const CustomerHomepage = () => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <Coffee className="h-12 w-12 text-primary/50" />
+                    <Coffee className="h-16 w-16 text-muted" />
                   )}
                 </div>
                 
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
                     <CardTitle className="text-lg">{item.name}</CardTitle>
-                    <Badge variant="secondary" className="text-sm font-bold">
+                    <Badge variant="secondary" className="text-lg font-bold bg-accent text-accent-foreground">
                       {formatPHP(item.price)}
                     </Badge>
                   </div>
@@ -377,7 +340,7 @@ const CustomerHomepage = () => {
                   
                   <Button 
                     onClick={() => addToCart(item)}
-                    className="w-full"
+                    className="w-full bg-primary hover:bg-primary/90"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Add to Cart
@@ -389,8 +352,8 @@ const CustomerHomepage = () => {
 
           {filteredItems.length === 0 && (
             <div className="text-center py-12">
-              <Coffee className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-lg text-muted-foreground">No items found matching your search.</p>
+              <Coffee className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <p className="text-xl text-muted-foreground">No items found matching your search.</p>
             </div>
           )}
         </div>
@@ -419,7 +382,7 @@ const CustomerHomepage = () => {
                     <CardContent className="p-4">
                       <div className="flex justify-between items-start mb-2">
                         <h4 className="font-medium">{item.name}</h4>
-                        <span className="font-bold">{formatPHP(item.price * item.quantity)}</span>
+                        <span className="font-bold text-accent">{formatPHP(item.price * item.quantity)}</span>
                       </div>
                       
                       <div className="flex items-center gap-2 mb-2">
@@ -430,7 +393,7 @@ const CustomerHomepage = () => {
                         >
                           <Minus className="h-3 w-3" />
                         </Button>
-                        <span className="w-8 text-center">{item.quantity}</span>
+                        <span className="w-8 text-center font-medium">{item.quantity}</span>
                         <Button
                           size="sm"
                           variant="outline"
@@ -439,39 +402,24 @@ const CustomerHomepage = () => {
                           <Plus className="h-3 w-3" />
                         </Button>
                       </div>
-                      
-                      <Input
-                        placeholder="Special instructions..."
-                        value={item.special_instructions || ""}
-                        onChange={(e) => updateInstructions(item.id, e.target.value)}
-                        className="text-sm"
-                      />
                     </CardContent>
                   </Card>
                 ))}
 
-                <div className="border-t pt-4 space-y-2">
-                  <div className="flex justify-between">
-                    <span>Subtotal:</span>
-                    <span>{formatPHP(cartTotal)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Tax (12%):</span>
-                    <span>{formatPHP(cartTax)}</span>
-                  </div>
-                  <div className="flex justify-between font-bold text-lg">
+                <div className="border-t pt-4">
+                  <div className="flex justify-between font-bold text-xl mb-4">
                     <span>Total:</span>
-                    <span>{formatPHP(cartGrandTotal)}</span>
+                    <span className="text-accent">{formatPHP(cartTotal)}</span>
                   </div>
+                  
+                  <Button 
+                    onClick={() => setIsCheckoutOpen(true)}
+                    className="w-full bg-primary hover:bg-primary/90"
+                    size="lg"
+                  >
+                    Proceed to Checkout
+                  </Button>
                 </div>
-
-                <Button 
-                  onClick={() => setIsCheckoutOpen(true)}
-                  className="w-full"
-                  size="lg"
-                >
-                  Proceed to Checkout
-                </Button>
               </>
             )}
           </div>
@@ -482,79 +430,49 @@ const CustomerHomepage = () => {
       <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Complete Your Order</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Complete Your Order
+            </DialogTitle>
             <DialogDescription>
-              Please provide your details to complete the order
+              Please provide your details to place the order
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="name">Name *</Label>
-                <Input
-                  id="name"
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="Your full name"
-                />
-              </div>
-              <div>
-                <Label htmlFor="phone">Phone *</Label>
-                <Input
-                  id="phone"
-                  value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
-                  placeholder="09XX XXX XXXX"
-                />
-              </div>
-            </div>
-
             <div>
-              <Label htmlFor="orderType">Order Type</Label>
-              <Select value={orderType} onValueChange={setOrderType}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="takeout">Takeout</SelectItem>
-                  <SelectItem value="dine-in">Dine In</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="pickup">Preferred Pickup Time (Optional)</Label>
+              <Label htmlFor="name">Customer Name *</Label>
               <Input
-                id="pickup"
-                type="datetime-local"
-                value={pickupTime}
-                onChange={(e) => setPickupTime(e.target.value)}
-                min={new Date().toISOString().slice(0, 16)}
+                id="name"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                placeholder="Enter your full name"
+                className="bg-background"
               />
             </div>
 
             <div>
-              <Label htmlFor="notes">Special Notes (Optional)</Label>
+              <Label htmlFor="instructions">Special Instructions (Optional)</Label>
               <Textarea
-                id="notes"
-                value={customerNotes}
-                onChange={(e) => setCustomerNotes(e.target.value)}
+                id="instructions"
+                value={specialInstructions}
+                onChange={(e) => setSpecialInstructions(e.target.value)}
                 placeholder="Any special requests or notes..."
                 rows={3}
+                className="bg-background"
               />
             </div>
 
             <div className="border-t pt-4">
-              <div className="flex justify-between font-bold text-lg mb-4">
+              <div className="flex justify-between font-bold text-xl mb-4">
                 <span>Total:</span>
-                <span>{formatPHP(cartGrandTotal)}</span>
+                <span className="text-accent">{formatPHP(cartTotal)}</span>
               </div>
               
               <Button 
                 onClick={submitOrder}
                 disabled={isSubmitting}
-                className="w-full"
+                className="w-full bg-primary hover:bg-primary/90"
                 size="lg"
               >
                 {isSubmitting ? "Placing Order..." : "Place Order"}
@@ -567,4 +485,4 @@ const CustomerHomepage = () => {
   );
 };
 
-export default CustomerHomepage;
+export default CustomerMenu;

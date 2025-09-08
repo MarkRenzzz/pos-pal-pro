@@ -8,91 +8,99 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Orijins Coffee House Brand Colors */
-    --background: 35 100% 98%;
-    --foreground: 25 95% 8%;
+    /* Orijin's Coffee Shop Brand Colors */
+    --background: 39 100% 97%; /* Warm White #FFF8F0 */
+    --foreground: 29 61% 26%; /* Dark Brown #6B3E1A */
 
-    --card: 35 100% 98%;
-    --card-foreground: 25 95% 8%;
+    --card: 39 100% 97%;
+    --card-foreground: 29 61% 26%;
 
-    --popover: 35 100% 98%;
-    --popover-foreground: 25 95% 8%;
+    --popover: 39 100% 97%;
+    --popover-foreground: 29 61% 26%;
 
-    --primary: 25 95% 25%; /* Rich coffee brown */
-    --primary-foreground: 35 100% 98%;
+    --primary: 29 47% 35%; /* Rich Coffee Brown #895129 */
+    --primary-foreground: 39 100% 97%;
 
-    --secondary: 30 40% 85%; /* Light coffee cream */
-    --secondary-foreground: 25 95% 25%;
+    --secondary: 39 60% 89%; /* Cream/Beige #F5E6D3 */
+    --secondary-foreground: 29 61% 26%;
 
-    --muted: 30 40% 85%;
-    --muted-foreground: 25 50% 45%;
+    --muted: 39 41% 57%; /* Light Brown #B8956A */
+    --muted-foreground: 29 61% 26%;
 
-    --accent: 25 80% 35%; /* Medium coffee brown */
-    --accent-foreground: 35 100% 98%;
+    --accent: 39 50% 64%; /* Accent Gold #D4A574 */
+    --accent-foreground: 29 61% 26%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 35 100% 98%;
+    --destructive: 6 63% 46%; /* Error Red #C0392B */
+    --destructive-foreground: 39 100% 97%;
 
-    --border: 30 30% 88%;
-    --input: 30 30% 88%;
-    --ring: 25 95% 25%;
+    --success: 90 9% 48%; /* Success Green #7A8471 */
+    --success-foreground: 39 100% 97%;
 
-    --radius: 0.5rem;
+    --warning: 28 80% 52%; /* Warning Orange #E67E22 */
+    --warning-foreground: 39 100% 97%;
 
-    --sidebar-background: 0 0% 98%;
+    --border: 39 41% 82%;
+    --input: 39 60% 89%;
+    --ring: 29 47% 35%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --radius: 0.75rem;
 
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Sidebar Coffee Theme */
+    --sidebar-background: 29 47% 35%; /* Rich Coffee Brown */
+    --sidebar-foreground: 39 100% 97%;
+    --sidebar-primary: 39 50% 64%; /* Accent Gold */
+    --sidebar-primary-foreground: 29 61% 26%;
+    --sidebar-accent: 29 47% 42%;
+    --sidebar-accent-foreground: 39 100% 97%;
+    --sidebar-border: 29 47% 30%;
+    --sidebar-ring: 39 50% 64%;
   }
 
   .dark {
     /* Dark mode with coffee theme */
-    --background: 25 95% 8%;
-    --foreground: 35 100% 98%;
+    --background: 29 61% 16%; /* Darker coffee brown */
+    --foreground: 39 100% 97%;
 
-    --card: 25 80% 12%;
-    --card-foreground: 35 100% 98%;
+    --card: 29 47% 20%;
+    --card-foreground: 39 100% 97%;
 
-    --popover: 25 80% 12%;
-    --popover-foreground: 35 100% 98%;
+    --popover: 29 47% 20%;
+    --popover-foreground: 39 100% 97%;
 
-    --primary: 35 100% 95%;
-    --primary-foreground: 25 95% 8%;
+    --primary: 39 50% 64%; /* Accent Gold */
+    --primary-foreground: 29 61% 16%;
 
-    --secondary: 25 50% 20%;
-    --secondary-foreground: 35 100% 98%;
+    --secondary: 29 47% 25%;
+    --secondary-foreground: 39 100% 97%;
 
-    --muted: 25 50% 20%;
-    --muted-foreground: 30 30% 70%;
+    --muted: 29 47% 25%;
+    --muted-foreground: 39 41% 75%;
 
-    --accent: 25 70% 30%;
-    --accent-foreground: 35 100% 98%;
+    --accent: 39 41% 57%; /* Light Brown */
+    --accent-foreground: 29 61% 16%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 35 100% 98%;
+    --destructive: 6 63% 46%;
+    --destructive-foreground: 39 100% 97%;
 
-    --border: 25 50% 20%;
-    --input: 25 50% 20%;
-    --ring: 35 100% 90%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --success: 90 9% 48%;
+    --success-foreground: 39 100% 97%;
+
+    --warning: 28 80% 52%;
+    --warning-foreground: 39 100% 97%;
+
+    --border: 29 47% 25%;
+    --input: 29 47% 25%;
+    --ring: 39 50% 64%;
+
+    /* Dark Sidebar */
+    --sidebar-background: 29 61% 20%;
+    --sidebar-foreground: 39 100% 97%;
+    --sidebar-primary: 39 50% 64%;
+    --sidebar-primary-foreground: 29 61% 16%;
+    --sidebar-accent: 29 47% 25%;
+    --sidebar-accent-foreground: 39 100% 97%;
+    --sidebar-border: 29 47% 22%;
+    --sidebar-ring: 39 50% 64%;
   }
 }
 
