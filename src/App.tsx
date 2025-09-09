@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AuthRedirect from "./components/AuthRedirect";
 import CustomerMenu from "./pages/CustomerMenu";
 import StaffDashboard from "./pages/StaffDashboard";
 import Auth from "./pages/Auth";
@@ -32,6 +33,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <AuthRedirect />
           <Routes>
             {/* Public customer menu - no auth required */}
             <Route path="/" element={<CustomerMenu />} />

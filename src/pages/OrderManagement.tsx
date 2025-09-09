@@ -162,8 +162,7 @@ const OrderManagement = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending': return 'bg-yellow-500';
-      case 'approved': return 'bg-blue-500';
-      case 'preparing': return 'bg-purple-500';
+      case 'preparing': return 'bg-blue-500';
       case 'ready': return 'bg-green-500';
       case 'completed': return 'bg-gray-500';
       case 'cancelled': return 'bg-red-500';
@@ -174,8 +173,7 @@ const OrderManagement = () => {
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case 'pending': return 'default';
-      case 'approved': return 'secondary';
-      case 'preparing': return 'outline';
+      case 'preparing': return 'secondary';
       case 'ready': return 'default';
       case 'completed': return 'secondary';
       case 'cancelled': return 'destructive';
@@ -268,12 +266,14 @@ const OrderManagement = () => {
   };
 
   const handleQuickAction = (order: Order, action: string) => {
+    console.log("Quick action clicked:", action, "for order:", order.order_number);
     setSelectedOrder(order);
     setActionType(action);
     
     switch (action) {
       case 'approve':
-        performOrderAction(order.id, 'approved', 'approve');
+        console.log("Approving order - changing status to 'preparing'");
+        performOrderAction(order.id, 'preparing', 'approve');
         break;
       case 'preparing':
         performOrderAction(order.id, 'preparing', 'preparing');
@@ -368,7 +368,6 @@ const OrderManagement = () => {
             <SelectContent>
               <SelectItem value="all">All Orders</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
               <SelectItem value="preparing">Preparing</SelectItem>
               <SelectItem value="ready">Ready</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
@@ -382,7 +381,7 @@ const OrderManagement = () => {
           {filteredOrders.map(order => (
             <Card key={order.id} className={`relative overflow-hidden border-l-4 ${
               order.status === 'pending' ? 'border-l-yellow-500' : 
-              order.status === 'preparing' ? 'border-l-purple-500' :
+              order.status === 'preparing' ? 'border-l-blue-500' :
               order.status === 'ready' ? 'border-l-green-500' :
               order.status === 'completed' ? 'border-l-gray-500' :
               'border-l-red-500'
@@ -478,17 +477,6 @@ const OrderManagement = () => {
                         Cancel
                       </Button>
                     </>
-                  )}
-                  
-                  {order.status === 'approved' && (
-                    <Button 
-                      size="sm" 
-                      onClick={() => handleQuickAction(order, 'preparing')}
-                      className="flex-1"
-                    >
-                      <RefreshCw className="h-3 w-3 mr-1" />
-                      Start Preparing
-                    </Button>
                   )}
                   
                   {order.status === 'preparing' && (

@@ -58,10 +58,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     if (error) {
       console.error("Error signing out:", error);
     } else {
-      // Redirect to auth page after successful signout from staff pages
-      if (window.location.pathname !== '/') {
-        window.location.href = '/auth';
-      }
+      // Always redirect to auth page for staff, customer menu for public
+      window.location.href = '/auth';
     }
   };
 
