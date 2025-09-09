@@ -24,7 +24,7 @@ import {
   Clock,
   CheckCircle
 } from "lucide-react";
-import { Link, useLocation, Outlet, Navigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 interface DashboardStats {
   dailySales: number;
@@ -151,10 +151,6 @@ const StaffDashboard = () => {
   const handleSignOut = async () => {
     await signOut();
   };
-
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
 
   const navigationItems = [
     { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -372,7 +368,9 @@ const StaffDashboard = () => {
                 </Card>
               </div>
             ) : (
-              <Outlet />
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">Select a menu item from the sidebar to get started.</p>
+              </div>
             )}
           </main>
         </div>

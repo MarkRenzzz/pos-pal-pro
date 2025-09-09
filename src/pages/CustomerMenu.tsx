@@ -155,7 +155,7 @@ const CustomerMenu = () => {
         .insert({
           order_number: orderNumber,
           customer_name: customerName,
-          special_instructions: specialInstructions || null,
+          customer_notes: specialInstructions || null,
           total_amount: total,
           status: "pending",
           payment_method: "pending"

@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import ProtectedRoute from "./components/ProtectedRoute";
 import CustomerMenu from "./pages/CustomerMenu";
 import StaffDashboard from "./pages/StaffDashboard";
 import Auth from "./pages/Auth";
@@ -36,22 +37,14 @@ const App = () => (
             <Route path="/" element={<CustomerMenu />} />
             <Route path="/auth" element={<Auth />} />
             
-            {/* Staff dashboard with nested routes */}
-            <Route path="/dashboard" element={<StaffDashboard />}>
-              <Route path="menu" element={<MenuManagement />} />
-              <Route path="inventory" element={<InventoryManagement />} />
-              <Route path="sales" element={<SalesHistory />} />
-              <Route path="reports" element={<Reports />} />
-              <Route path="staff" element={<StaffManagement />} />
-            </Route>
-            
-            {/* Individual pages for direct access */}
-            <Route path="/order-management" element={<OrderManagement />} />
-            <Route path="/menu" element={<MenuManagement />} />
-            <Route path="/inventory" element={<InventoryManagement />} />
-            <Route path="/sales" element={<SalesHistory />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/staff" element={<StaffManagement />} />
+            {/* Protected staff routes */}
+            <Route path="/dashboard" element={<ProtectedRoute><StaffDashboard /></ProtectedRoute>} />
+            <Route path="/order-management" element={<ProtectedRoute><OrderManagement /></ProtectedRoute>} />
+            <Route path="/menu" element={<ProtectedRoute><MenuManagement /></ProtectedRoute>} />
+            <Route path="/inventory" element={<ProtectedRoute><InventoryManagement /></ProtectedRoute>} />
+            <Route path="/sales" element={<ProtectedRoute><SalesHistory /></ProtectedRoute>} />
+            <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+            <Route path="/staff" element={<ProtectedRoute><StaffManagement /></ProtectedRoute>} />
             
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />
