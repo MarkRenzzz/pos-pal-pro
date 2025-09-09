@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 import { formatPHP } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +12,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import Header from "@/components/Header";
 import { 
   CheckCircle, 
   XCircle, 
@@ -25,7 +25,9 @@ import {
   Phone,
   User,
   Calendar,
-  MessageSquare
+  MessageSquare,
+  ArrowLeft,
+  Home
 } from "lucide-react";
 
 interface Order {
@@ -59,6 +61,7 @@ interface OrderItem {
 
 const OrderManagement = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [statusFilter, setStatusFilter] = useState("all");
@@ -186,6 +189,8 @@ const OrderManagement = () => {
     setIsSubmitting(true);
     
     try {
+      console.log("Performing order action:", { orderId, newStatus, actionType });
+      
       // Update order status
       const { error: orderError } = await supabase
         .from("orders")
@@ -195,7 +200,12 @@ const OrderManagement = () => {
         })
         .eq("id", orderId);
 
-      if (orderError) throw orderError;
+      if (orderError) {
+        console.error("Order update error:", orderError);
+        throw orderError;
+      }
+
+      console.log("Order status updated successfully");
 
       // Log the action
       const { error: actionError } = await supabase
@@ -209,15 +219,28 @@ const OrderManagement = () => {
           notes: actionNotes || null
         });
 
-      if (actionError) throw actionError;
+      if (actionError) {
+        console.error("Action log error:", actionError);
+        throw actionError;
+      }
 
-      // Log activity
-      const order = orders.find(o => o.id === orderId);
-      await supabase.rpc('log_activity', {
-        action_type: 'update',
-        description_text: `Order ${order?.order_number} ${actionType}`,
-        metadata_json: { order_id: orderId, action: actionType, new_status: newStatus }
-      });
+      console.log("Action logged successfully");
+
+      // Log activity - optional, don't fail if this fails
+      try {
+        const order = orders.find(o => o.id === orderId);
+        await supabase
+          .from("activity_logs")
+          .insert({
+            user_id: user.id,
+            action: 'order_action',
+            description: `Order ${order?.order_number} ${actionType}`,
+            metadata: { order_id: orderId, action: actionType, new_status: newStatus }
+          });
+        console.log("Activity logged successfully");
+      } catch (activityError) {
+        console.warn("Activity logging failed (non-critical):", activityError);
+      }
 
       toast({
         title: "Action Completed",
@@ -272,29 +295,57 @@ const OrderManagement = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header title="Order Management">
-        <div className="flex items-center gap-4">
-          <Badge variant="outline" className="gap-2">
-            <Clock className="h-3 w-3" />
-            {pendingCount} Pending
-          </Badge>
-          <Badge variant="outline" className="gap-2">
-            <RefreshCw className="h-3 w-3" />
-            {preparingCount} Preparing
-          </Badge>
-          <Badge variant="outline" className="gap-2">
-            <CheckCircle className="h-3 w-3" />
-            {readyCount} Ready
-          </Badge>
-          <div className="text-right">
-            <p className="text-sm font-medium">{user?.email}</p>
-            <p className="text-xs text-primary-foreground/80">Staff</p>
+      {/* Header */}
+      <header className="bg-primary text-primary-foreground shadow-lg sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate('/dashboard')}
+                className="text-primary-foreground hover:bg-primary-foreground/10"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Dashboard
+              </Button>
+              <div className="flex items-center space-x-3">
+                <img 
+                  src="/lovable-uploads/de766a0c-8555-4067-98ad-1830ddc6138a.png" 
+                  alt="Orijin's Coffee Shop" 
+                  className="h-8 w-8 rounded"
+                />
+                <div>
+                  <h1 className="text-xl font-bold">Order Management</h1>
+                  <p className="text-xs text-primary-foreground/70">Orijin's Coffee House</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <Badge variant="outline" className="gap-2 bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20">
+                <Clock className="h-3 w-3" />
+                {pendingCount} Pending
+              </Badge>
+              <Badge variant="outline" className="gap-2 bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20">
+                <RefreshCw className="h-3 w-3" />
+                {preparingCount} Preparing
+              </Badge>
+              <Badge variant="outline" className="gap-2 bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20">
+                <CheckCircle className="h-3 w-3" />
+                {readyCount} Ready
+              </Badge>
+              <div className="text-right">
+                <p className="text-sm font-medium">{user?.email}</p>
+                <p className="text-xs text-primary-foreground/80">Staff</p>
+              </div>
+              <Button variant="secondary" onClick={signOut}>
+                Sign Out
+              </Button>
+            </div>
           </div>
-          <Button variant="secondary" onClick={signOut}>
-            Sign Out
-          </Button>
         </div>
-      </Header>
+      </header>
 
       <div className="p-6">
         {/* Filters */}

@@ -57,6 +57,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error("Error signing out:", error);
+    } else {
+      // Redirect to auth page after successful signout from staff pages
+      if (window.location.pathname !== '/') {
+        window.location.href = '/auth';
+      }
     }
   };
 
