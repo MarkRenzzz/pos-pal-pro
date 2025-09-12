@@ -102,52 +102,54 @@ const StaffManagement = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="border-b bg-card">
-        <div className="flex h-16 items-center px-6">
+      <div className="border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent backdrop-blur-sm">
+        <div className="flex h-20 items-center px-6">
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={() => navigate("/")}
-            className="mr-4"
+            onClick={() => navigate("/dashboard")}
+            className="mr-4 hover:bg-primary/10"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
           </Button>
-          <h1 className="text-xl font-bold">Staff Management</h1>
-          <div className="ml-auto">
-            <Button onClick={() => setCreateOpen(true)}>Create User</Button>
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Staff Management</h1>
+            <p className="text-sm text-muted-foreground">Manage team members and permissions</p>
           </div>
+          <Button onClick={() => setCreateOpen(true)} className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg">Create User</Button>
         </div>
       </div>
 
       <div className="container mx-auto p-6">
         {/* Staff Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-card via-card to-primary/5 hover:shadow-xl transition-all duration-300">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Total Staff</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Staff</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{profiles.length}</div>
+              <div className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{profiles.length}</div>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-card via-card to-accent/5 hover:shadow-xl transition-all duration-300">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Managers</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Managers</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-3xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
                 {profiles.filter(p => p.role === "manager").length}
               </div>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-card via-card to-success/5 hover:shadow-xl transition-all duration-300">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Cashiers</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Cashiers</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-3xl font-bold bg-gradient-to-r from-success to-primary bg-clip-text text-transparent">
                 {profiles.filter(p => p.role === "cashier").length}
               </div>
             </CardContent>
@@ -155,9 +157,9 @@ const StaffManagement = () => {
         </div>
 
         {/* Staff List */}
-        <Card>
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-card to-accent/5">
           <CardHeader>
-            <CardTitle>Staff Members</CardTitle>
+            <CardTitle className="text-xl font-semibold">Staff Members</CardTitle>
             <CardDescription>
               Manage staff roles and permissions
             </CardDescription>

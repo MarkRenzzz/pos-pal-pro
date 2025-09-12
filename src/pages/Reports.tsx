@@ -119,25 +119,29 @@ const Reports = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="border-b bg-card">
-        <div className="flex h-16 items-center px-6">
+      <div className="border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent backdrop-blur-sm">
+        <div className="flex h-20 items-center px-6">
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={() => navigate("/")}
-            className="mr-4"
+            onClick={() => navigate("/dashboard")}
+            className="mr-4 hover:bg-primary/10"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
           </Button>
-          <h1 className="text-xl font-bold">Reports & Analytics</h1>
+          <div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Reports & Analytics</h1>
+            <p className="text-sm text-muted-foreground">Analyze business performance and trends</p>
+          </div>
         </div>
       </div>
 
       <div className="container mx-auto p-6">
         {/* Date Range Selector */}
-        <Card className="mb-6">
+        <Card className="mb-8 border-0 shadow-lg bg-gradient-to-r from-card to-secondary/20">
           <CardHeader>
-            <CardTitle>Date Range</CardTitle>
+            <CardTitle className="text-lg font-semibold">Date Range</CardTitle>
             <CardDescription>Select the date range for your reports</CardDescription>
           </CardHeader>
           <CardContent>
@@ -169,52 +173,52 @@ const Reports = () => {
         ) : (
           <>
             {/* Key Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <Card className="border-0 shadow-lg bg-gradient-to-br from-card via-card to-primary/5 hover:shadow-xl transition-all duration-300">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Total Sales</CardTitle>
+                  <DollarSign className="h-5 w-5 text-primary" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{formatPHP(salesData.totalSales)}</div>
+                  <div className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{formatPHP(salesData.totalSales)}</div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-0 shadow-lg bg-gradient-to-br from-card via-card to-accent/5 hover:shadow-xl transition-all duration-300">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-                  <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Total Orders</CardTitle>
+                  <ShoppingCart className="h-5 w-5 text-accent" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{salesData.totalOrders}</div>
+                  <div className="text-2xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">{salesData.totalOrders}</div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-0 shadow-lg bg-gradient-to-br from-card via-card to-success/5 hover:shadow-xl transition-all duration-300">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Average Order Value</CardTitle>
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Average Order Value</CardTitle>
+                  <TrendingUp className="h-5 w-5 text-success" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{formatPHP(salesData.averageOrderValue)}</div>
+                  <div className="text-2xl font-bold bg-gradient-to-r from-success to-primary bg-clip-text text-transparent">{formatPHP(salesData.averageOrderValue)}</div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="border-0 shadow-lg bg-gradient-to-br from-card via-card to-warning/5 hover:shadow-xl transition-all duration-300">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Tax</CardTitle>
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium text-muted-foreground">Total Tax</CardTitle>
+                  <DollarSign className="h-5 w-5 text-warning" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{formatPHP(salesData.totalTax)}</div>
+                  <div className="text-2xl font-bold bg-gradient-to-r from-warning to-primary bg-clip-text text-transparent">{formatPHP(salesData.totalTax)}</div>
                 </CardContent>
               </Card>
             </div>
 
             {/* Top Selling Items */}
-            <Card>
+            <Card className="border-0 shadow-lg bg-gradient-to-br from-card to-accent/5">
               <CardHeader>
-                <CardTitle>Top Selling Items</CardTitle>
+                <CardTitle className="text-xl font-semibold">Top Selling Items</CardTitle>
                 <CardDescription>Best performing menu items in the selected period</CardDescription>
               </CardHeader>
               <CardContent>

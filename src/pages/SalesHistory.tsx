@@ -85,74 +85,78 @@ const SalesHistory = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="border-b bg-card">
-        <div className="flex h-16 items-center px-6">
+      <div className="border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent backdrop-blur-sm">
+        <div className="flex h-20 items-center px-6">
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={() => navigate("/")}
-            className="mr-4"
+            onClick={() => navigate("/dashboard")}
+            className="mr-4 hover:bg-primary/10"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
           </Button>
-          <h1 className="text-xl font-bold">Sales History</h1>
+          <div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Sales History</h1>
+            <p className="text-sm text-muted-foreground">Track and analyze sales performance</p>
+          </div>
         </div>
       </div>
 
       <div className="container mx-auto p-6">
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-card via-card to-primary/5 hover:shadow-xl transition-all duration-300">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Orders</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{filteredOrders.length}</div>
+              <div className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{filteredOrders.length}</div>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-card via-card to-accent/5 hover:shadow-xl transition-all duration-300">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Sales</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatPHP(totalSales)}</div>
+              <div className="text-3xl font-bold bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">{formatPHP(totalSales)}</div>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-card via-card to-success/5 hover:shadow-xl transition-all duration-300">
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Total Tax</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Tax</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatPHP(totalTax)}</div>
+              <div className="text-3xl font-bold bg-gradient-to-r from-success to-primary bg-clip-text text-transparent">{formatPHP(totalTax)}</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Search */}
-        <Card className="mb-6">
+        <Card className="mb-8 border-0 shadow-lg bg-gradient-to-r from-card to-secondary/20">
           <CardHeader>
-            <CardTitle>Search Orders</CardTitle>
+            <CardTitle className="text-lg font-semibold">Search Orders</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center space-x-2">
-              <Search className="h-4 w-4 text-muted-foreground" />
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search by order number or customer name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1"
+                className="pl-10 border-0 bg-background/50 backdrop-blur-sm shadow-inner"
               />
             </div>
           </CardContent>
         </Card>
 
         {/* Orders List */}
-        <Card>
+        <Card className="border-0 shadow-lg bg-gradient-to-br from-card to-accent/5">
           <CardHeader>
-            <CardTitle>Recent Orders</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-xl font-semibold">Recent Orders</CardTitle>
+            <CardDescription className="text-base">
               {filteredOrders.length} orders found
             </CardDescription>
           </CardHeader>

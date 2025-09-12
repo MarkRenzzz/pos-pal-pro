@@ -188,26 +188,30 @@ const MenuManagement = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="border-b bg-card">
-        <div className="flex h-16 items-center px-6">
+      <div className="border-b bg-gradient-to-r from-primary/10 via-primary/5 to-transparent backdrop-blur-sm">
+        <div className="flex h-20 items-center px-6">
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={() => navigate("/")}
-            className="mr-4"
+            onClick={() => navigate("/dashboard")}
+            className="mr-4 hover:bg-primary/10"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
           </Button>
-          <h1 className="text-xl font-bold">Menu Management</h1>
+          <div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Menu Management</h1>
+            <p className="text-sm text-muted-foreground">Create and manage menu items</p>
+          </div>
         </div>
       </div>
 
       <div className="container mx-auto p-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Form */}
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-card to-primary/5 hover:shadow-xl transition-all duration-300">
             <CardHeader>
-              <CardTitle>{isEditing ? "Edit Menu Item" : "Add New Menu Item"}</CardTitle>
+              <CardTitle className="text-xl font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{isEditing ? "Edit Menu Item" : "Add New Menu Item"}</CardTitle>
               <CardDescription>
                 {isEditing ? "Update the menu item details" : "Create a new menu item"}
               </CardDescription>
@@ -297,9 +301,9 @@ const MenuManagement = () => {
           </Card>
 
           {/* Menu Items List */}
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-card to-accent/5 hover:shadow-xl transition-all duration-300">
             <CardHeader>
-              <CardTitle>Menu Items</CardTitle>
+              <CardTitle className="text-xl font-semibold">Menu Items</CardTitle>
               <CardDescription>Manage your menu items</CardDescription>
             </CardHeader>
             <CardContent>
