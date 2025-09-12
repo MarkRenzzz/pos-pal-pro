@@ -387,7 +387,6 @@ const OrderManagement = () => {
               order.status === 'preparing' ? 'border-l-blue-500' :
               order.status === 'ready' ? 'border-l-green-500' :
               order.status === 'completed' ? 'border-l-gray-500' :
-              'border-l-red-500'
               order.status === 'refunded' ? 'border-l-purple-500' :
               'border-l-red-500'
             }`}>
