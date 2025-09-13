@@ -59,7 +59,19 @@ const CustomerMenu = () => {
   useEffect(() => {
     loadMenuItems();
     loadCategories();
+    // Load cart from localStorage
+    try {
+      const stored = localStorage.getItem('customer_cart');
+      if (stored) setCart(JSON.parse(stored));
+    } catch {}
   }, []);
+
+  // Persist cart to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('customer_cart', JSON.stringify(cart));
+    } catch {}
+  }, [cart]);
 
   const loadMenuItems = async () => {
     const { data, error } = await supabase
@@ -125,10 +137,20 @@ const CustomerMenu = () => {
   };
 
   const submitOrder = async () => {
-    if (!customerName.trim()) {
+    const name = customerName.trim();
+    if (name.length < 2) {
       toast({
-        title: "Missing Information",
-        description: "Please provide your name.",
+        title: "Invalid Name",
+        description: "Customer name must be at least 2 characters.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (specialInstructions && specialInstructions.length > 500) {
+      toast({
+        title: "Too Long",
+        description: "Special instructions must be 500 characters or less.",
         variant: "destructive",
       });
       return;
@@ -147,25 +169,25 @@ const CustomerMenu = () => {
 
     try {
       const total = calculateTotal();
-      
-      // Use database function to generate order number
-      const { data: orderNumberData, error: orderNumberError } = await supabase
-        .rpc('generate_order_number');
-      
-      if (orderNumberError) {
-        console.error('Error generating order number:', orderNumberError);
-        throw orderNumberError;
-      }
+      let orderNumber: string | null = null;
 
-      const orderNumber = orderNumberData;
+      // Try database-generated order number first; fallback to client-generated
+      try {
+        const { data: orderNumberData, error: orderNumberError } = await supabase.rpc('generate_order_number');
+        if (orderNumberError) throw orderNumberError;
+        orderNumber = orderNumberData as string;
+      } catch (e) {
+        console.warn('Falling back to local order number generation', e);
+        orderNumber = `ORD-${new Date().toISOString().replace(/[-:TZ.]/g, '').slice(0,14)}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
+      }
 
       // Create order
       const { data: order, error: orderError } = await supabase
         .from("orders")
         .insert({
           order_number: orderNumber,
-          customer_name: customerName,
-          customer_notes: specialInstructions || null,
+          customer_name: name,
+          customer_notes: specialInstructions ? specialInstructions.slice(0, 500) : null,
           total_amount: total,
           status: "pending",
           payment_method: "cash",
@@ -205,11 +227,11 @@ const CustomerMenu = () => {
       setIsCheckoutOpen(false);
       setIsCartOpen(false);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting order:", error);
       toast({
         title: "Order Failed",
-        description: "There was an error submitting your order. Please try again.",
+        description: error?.message ? String(error.message) : "There was an error submitting your order. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -469,7 +491,7 @@ const CustomerMenu = () => {
               <Textarea
                 id="instructions"
                 value={specialInstructions}
-                onChange={(e) => setSpecialInstructions(e.target.value)}
+                onChange={(e) => setSpecialInstructions(e.target.value.slice(0, 500))}
                 placeholder="Any special requests or notes..."
                 rows={3}
                 className="bg-background"
