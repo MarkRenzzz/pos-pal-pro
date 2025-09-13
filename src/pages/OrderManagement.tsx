@@ -91,21 +91,30 @@ const OrderManagement = () => {
           console.log('New order received:', payload);
           loadOrders(); // Reload orders when new one comes in
           
-          // Show notification for new orders
-          if (payload.new.status === 'pending') {
-            toast({
-              title: "New Order Received!",
-              description: `Order ${payload.new.order_number} from ${payload.new.customer_name || 'Customer'}`,
-            });
-            
-            // Browser notification
-            if (Notification.permission === 'granted') {
-              new Notification('New Order Received!', {
-                body: `Order ${payload.new.order_number} from ${payload.new.customer_name || 'Customer'}`,
-                icon: '/lovable-uploads/de766a0c-8555-4067-98ad-1830ddc6138a.png'
+            // Show notification for new orders
+            if (payload.new.status === 'pending') {
+              toast({
+                title: "🔔 New Order Received!",
+                description: `Order ${payload.new.order_number} from ${payload.new.customer_name || 'Customer'} - ${formatPHP(payload.new.total_amount)}`,
               });
+              
+              // Browser notification with sound
+              if (Notification.permission === 'granted') {
+                const notification = new Notification('🔔 New Order Received!', {
+                  body: `Order ${payload.new.order_number} from ${payload.new.customer_name || 'Customer'}`,
+                  icon: '/lovable-uploads/de766a0c-8555-4067-98ad-1830ddc6138a.png',
+                  requireInteraction: true
+                });
+                
+                // Optional: Play notification sound
+                try {
+                  const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBTiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2QQAoUXrTp66hVFApGn+DyvmQdBjiS2fbOeysFJHfH8N2Q');
+                  audio.play().catch(() => {}); // Ignore errors if audio fails
+                } catch (e) {
+                  // Ignore audio errors
+                }
+              }
             }
-          }
         }
       )
       .subscribe();
@@ -601,10 +610,29 @@ const OrderManagement = () => {
 
             <Button 
               onClick={() => {
-                const newStatus = actionType === 'cancel' ? 'cancelled' : 
-                                actionType === 'refund' ? 'refunded' : 
-                                selectedOrder?.status || '';
-                performOrderAction(selectedOrder?.id || '', newStatus, actionType);
+                if (!selectedOrder) return;
+                
+                let newStatus = selectedOrder.status;
+                
+                if (actionType === 'cancel') {
+                  newStatus = 'cancelled';
+                } else if (actionType === 'refund') {
+                  newStatus = 'refunded';
+                  // Validate refund amount
+                  if (!actionAmount || parseFloat(actionAmount) <= 0) {
+                    toast({
+                      title: "Invalid Amount",
+                      description: "Please enter a valid refund amount.",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                } else if (actionType === 'discount') {
+                  // Keep current status for discounts
+                  newStatus = selectedOrder.status;
+                }
+                
+                performOrderAction(selectedOrder.id, newStatus, actionType);
               }}
               disabled={isSubmitting}
               className="w-full"

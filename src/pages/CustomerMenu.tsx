@@ -147,7 +147,17 @@ const CustomerMenu = () => {
 
     try {
       const total = calculateTotal();
-      const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+      
+      // Use database function to generate order number
+      const { data: orderNumberData, error: orderNumberError } = await supabase
+        .rpc('generate_order_number');
+      
+      if (orderNumberError) {
+        console.error('Error generating order number:', orderNumberError);
+        throw orderNumberError;
+      }
+
+      const orderNumber = orderNumberData;
 
       // Create order
       const { data: order, error: orderError } = await supabase
@@ -158,7 +168,8 @@ const CustomerMenu = () => {
           customer_notes: specialInstructions || null,
           total_amount: total,
           status: "pending",
-          payment_method: "pending"
+          payment_method: "cash",
+          order_type: "takeout"
         })
         .select()
         .single();
@@ -171,7 +182,8 @@ const CustomerMenu = () => {
         menu_item_id: item.id,
         quantity: item.quantity,
         unit_price: item.price,
-        total_price: item.price * item.quantity
+        total_price: item.price * item.quantity,
+        special_instructions: null
       }));
 
       const { error: itemsError } = await supabase
@@ -180,9 +192,10 @@ const CustomerMenu = () => {
 
       if (itemsError) throw itemsError;
 
+      // Show success message with order confirmation details
       toast({
-        title: "Order Placed Successfully!",
-        description: `Your order ${orderNumber} has been submitted. Please wait for staff confirmation.`,
+        title: "✅ Order Confirmed!",
+        description: `Order ${orderNumber} placed successfully. Total: ${formatPHP(total)}. Please wait for staff confirmation.`,
       });
 
       // Reset form and cart
